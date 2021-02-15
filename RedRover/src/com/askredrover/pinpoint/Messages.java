@@ -1,4 +1,5 @@
 package com.askredrover.pinpoint;
+
 import com.eos.accounts.User;
 import java.sql.*;
 import com.eos.Eos;
@@ -12,49 +13,95 @@ public class Messages {
 	public Messages(Eos eos) {
 		this.eos = eos;
 	}
-	
+
 	/**
 	 * Get Log from sending the team SMS.
+	 * 
 	 * @return
 	 */
-	public StringBuffer getTeamSMSLog() { 
-		if(logTeamSMS==null) { 
+	public StringBuffer getTeamSMSLog() {
+		if (logTeamSMS == null) {
 			logTeamSMS = new StringBuffer();
 			return logTeamSMS;
-		} else { 
-			return logTeamSMS; 
+		} else {
+			return logTeamSMS;
 		}
 	}
-	
+
 	/**
 	 * One of the most basic functions ... texting the company team.
 	 */
-	public void smsTeam(javax.servlet.http.HttpServletRequest r)
-	{	
-		if(logTeamSMS != null) { //clear it!
+	public void smsTeam(javax.servlet.http.HttpServletRequest r) {
+		if (logTeamSMS != null) { // clear it!
 			logTeamSMS.setLength(0);
 		}
-		
-		ArrayList<User> members = eos.getUsers().ourTeam(); int size = members.size();    
-		String msg = r.getParameter("sms"); msg = com.eos.utils.Strings.absoluteTruncation(msg,160);
-	
-		if(msg.length() > 0) {
+
+		ArrayList<User> members = eos.getUsers().ourTeam();
+		int size = members.size();
+		String msg = r.getParameter("sms");
+		msg = com.eos.utils.Strings.absoluteTruncation(msg, 160);
+
+		if (msg.length() > 0) {
 			logTeamSMS = new StringBuffer();
 			logTeamSMS.append("<p class=lead text-dark>" + msg + "</p>");
 			logTeamSMS.append("<b>Recipients:</b><ul>");
-	 		for(int i = 0; i < size;i++)
-			{
-				User u=(User)members.get(i);
-				if(u.phone().length() > 1) { 
-					eos.sms().send(msg, u.phone(),u.getUserId());
-					logTeamSMS.append(""+u.getFirstName() + " " + u.getLastName() + " &mdash; " + u.phoneFormatted() + "");
-					//TODO TRACE 
+			for (int i = 0; i < size; i++) {
+				User u = (User) members.get(i);
+				if (u.phone().length() > 1) {
+					eos.sms().send(msg, u.phone(), u.getUserId());
+					logTeamSMS.append(
+							"" + u.getFirstName() + " " + u.getLastName() + " &mdash; " + u.phoneFormatted() + "");
+					// TODO TRACE
 				}
 			}
-	 		logTeamSMS.append("</ul>");
+			logTeamSMS.append("</ul>");
 		}
 	}
-	
+
+	/**
+	 * Given a keyphrase and a specific number, get a message back.
+	 * 
+	 * @param phoneName
+	 * @param keyPhrase
+	 * @return
+	 */
+	public ArrayList<MessageOption> getMessageForkeyPhraseAndPhoneNumber(String phoneName, String keyPhrase) {
+		ArrayList<MessageOption> lst = new ArrayList<MessageOption>();
+
+		Connection c = eos.c();
+		Statement s = null;
+		ResultSet rs = null;
+		PreparedStatement ps = null;
+		try {
+
+			String sql = "Select fid,accountid,pid,cid,phone,input,output,indx,parent_fid from rr_flows where phone =? and input=?";
+			ps = c.prepareStatement(sql);
+			ps.setString(1, phoneName);
+			ps.setString(2, keyPhrase);
+			rs = ps.executeQuery();
+			while (rs.next()) {
+				int fid = rs.getInt(1);
+				int accountid = rs.getInt(2);
+				int pid = rs.getInt(3);
+				int cid = rs.getInt(4);
+				String phone = rs.getString(5);
+				String input = rs.getString(6);
+				String output = rs.getString(7);
+				int indx = rs.getInt(8);
+				int parentFid = rs.getInt(9);
+				lst.add(new MessageOption(fid, accountid, pid, cid, phone, input, output, indx, parentFid));
+			}
+
+		} catch (Exception e) {
+			eos.log("Errors getting messaging for keyPhrase. Err:" + e.toString(), "Messaging",
+					"getMessageForkeyPhraseAndPhoneNumber", 2);
+		} finally {
+			eos.cleanup(c, s, rs);
+		}
+
+		return lst;
+	}
+
 	/**
 	 * Get messages aligned with a phone number.
 	 * 
