@@ -9,6 +9,8 @@ public class Wisdom {
 	private Eos eos = null;
 	private RedRover rr = null;
 	private Categories categories = null;
+	private Articles articles = null;
+	
 
 	public Wisdom(Eos eos, RedRover rr) {
 		this.eos = eos;
@@ -33,5 +35,13 @@ public class Wisdom {
 		}
 		return categories;
 	}
-
+	
+	
+	
+	public Articles articles() { 
+		if(articles == null) { 
+			articles = new Articles(eos,rr);
+		}
+		return articles;
+	}
 }

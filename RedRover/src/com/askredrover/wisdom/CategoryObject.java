@@ -8,7 +8,7 @@ public class CategoryObject implements Category {
 	public CategoryObject(int catid, int eid, String category, String desc, int parentid, int siblingid) {
 		this.eid = eid;
 		this.catid = catid;
-		this.category = category;
+		this.category = category; if(category == null) { category = ""; }
 		this.desc = desc;
 		this.parentid = parentid;
 		this.siblingid = siblingid;

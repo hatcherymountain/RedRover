@@ -5,6 +5,8 @@ import com.eos.accounts.User;
 
 public class Constants {
 
+	public static final int RECENT_PARAMETER = 14;
+
 	public static final String TESTFLOW_KEYPHRASE = "test";
 
 	public static final String[] VENTURE_ROLES = { "User", "Editor", "Administrator" };
@@ -18,6 +20,50 @@ public class Constants {
 
 	public static final String[] EVENT_STATES = { "Inactive", "Active", "Completed" };
 	public static final String[] EVENT_PRIORITIES = { "Low", "Medium", "High", "Urgent" };
+
+	public static final String[] ARTICLE_STATES = { "Editing", "Review", "Live", "Archived" };
+	public static final String[] ARTICLE_STATE_COLORS = { "warning", "info", "success", "danger" };
+
+	public static String articleStatusAsString(int status) {
+		String s = null;
+		try {
+			s = (String) ARTICLE_STATES[status];
+		} catch (Exception e) {
+			s = (String) ARTICLE_STATES[0];
+		}
+		return s;
+	}
+
+	/**
+	 * Article states as an HTML Selection list.
+	 * 
+	 * @param current
+	 * @return
+	 */
+	public static String articleStatesAsSelection(int current) {
+		StringBuffer sb = new StringBuffer();
+
+		for (int i = 0; i < ARTICLE_STATES.length; i++) {
+			String p = (String) ARTICLE_STATES[i];
+			if (i == current) {
+				sb.append("<option select value=" + i + ">" + p + "</option>");
+			} else {
+				sb.append("<option value=" + i + ">" + p + "</option>");
+			}
+		}
+
+		return sb.toString();
+	}
+
+	public static String articleStatusColorAsString(int status) {
+		String s = null;
+		try {
+			s = (String) ARTICLE_STATE_COLORS[status];
+		} catch (Exception e) {
+			s = (String) ARTICLE_STATE_COLORS[0];
+		}
+		return s;
+	}
 
 	public static String ventureStatusColorAsString(int status) {
 		String s = null;

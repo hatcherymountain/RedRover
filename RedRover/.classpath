@@ -7,6 +7,6 @@
 	</classpathentry>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry exported="true" kind="lib" path="/Users/hatchery/developer/tomcat/lib/servlet-api.jar"/>
-	<classpathentry kind="lib" path="/Users/hatchery/developer/tomcat/webapps/wisdom/WEB-INF/lib/EOS-1.0.12.jar"/>
+	<classpathentry kind="lib" path="/Users/hatchery/developer/tomcat/webapps/wisdom/WEB-INF/lib/EOS-1.0.13.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

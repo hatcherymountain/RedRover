@@ -57,7 +57,7 @@ public class Categories {
 					int siblingid = eos.d(sibling);
 					s = c.createStatement();
 
-					String sql = "insert into widsom_categories values(null," + eid + ",'" + name + "','" + desc + "',"
+					String sql = "insert into wisdom_categories values(null," + eid + ",'" + name + "','" + desc + "',"
 							+ id + "," + siblingid + ")";
 					eos.log(sql);
 					s.execute(sql);
@@ -163,7 +163,7 @@ public class Categories {
 
 			s = c.createStatement();
 			int eid = eos.account().eid();
-			String sql = "select catid,category,description,parentid,siblingid from widsom_categories where eid=" + eid
+			String sql = "select catid,category,description,parentid,siblingid from wisdom_categories where eid=" + eid
 					+ " order by category asc";
 
 			rs = s.executeQuery(sql);
@@ -187,13 +187,22 @@ public class Categories {
 
 	}
 
+	
+	public String categorySelection() { 
+		return categorySelection(eos.e(0));
+	}
+	
+	public String categorySelection(String catid )
+	{
+		return categorySelection(eos.d(catid));
+	}
 	/**
 	 * Get a SELECT list of ALL categories including SIBLINGs and return an option
 	 * list.
 	 * 
 	 * @return
 	 */
-	public String categorySelection() {
+	private String categorySelection(int catid) {
 		StringBuffer sb = new StringBuffer();
 
 		/** Get Parents **/
@@ -208,22 +217,34 @@ public class Categories {
 			ArrayList<Category> kids = this.children(parent.catid());
 			int ksize = kids.size();
 
-			sb.append("<option value=\"" + pcid + "\">" + parent.category() + "</option>");
-
+			if(parent.catid()==catid) { 
+				sb.append("<option selected value=\"" + pcid + "\">" + parent.category() + "</option>");
+			} else { 
+				sb.append("<option value=\"" + pcid + "\">" + parent.category() + "</option>");
+			}
+			
 			if (ksize > 0) {
 				for (int k = 0; k < ksize; k++) {
 					Category kid = (Category) kids.get(k);
 					String kcid = eos.e(kid.catid());
 					ArrayList<Category> siblings = this.siblings(kid.catid());
 					int sibsize = siblings.size();
-					sb.append("<option value=\"" + kcid + "\">----" + kid.category() + "</option>");
-
+					
+					if(kid.catid()==catid) { 
+						sb.append("<option selected value=\"" + kcid + "\">----" + kid.category() + "</option>");
+					} else { 
+						sb.append("<option value=\"" + kcid + "\">----" + kid.category() + "</option>");
+					}
 					if (sibsize > 0) {
 
 						for (int s = 0; s < sibsize; s++) {
 							Category sibling = (Category) siblings.get(s);
 							String scid = eos.e(sibling.catid());
-							sb.append("<option value=\"" + scid + "\">-----------" + sibling.category() + "</option>");
+							if(sibling.catid()==catid) { 
+								sb.append("<option selected value=\"" + scid + "\">-----------" + sibling.category() + "</option>");
+							} else { 
+								sb.append("<option value=\"" + scid + "\">-----------" + sibling.category() + "</option>");
+							}
 						}
 					}
 
