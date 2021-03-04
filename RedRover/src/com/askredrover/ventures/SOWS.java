@@ -15,6 +15,106 @@ public class SOWS {
 	}
 	
 	/**
+	 * Links file to SOW.
+	 * @param sowid
+	 * @param fileid
+	 */
+	public void addFile(String sowid, String fileid, String role)
+	{
+		if(eos.active())
+		{
+			
+			//TODO ACTIVITY
+			
+			int sid = eos.d(sowid);
+			int fid = eos.d(fileid);
+			int iRole = com.eos.utils.Strings.getIntFromString(role);
+			Connection c = eos.c();
+			Statement  s = null;
+			try { 
+				
+				s = c.createStatement();
+				String sql = "insert into rr_sow_files values(" + sid + "," + fid + "," + iRole + ")";
+				s.execute(sql);
+				
+			} catch(Exception e) { 
+				eos.log("Errors adding file. Err:" + e.toString(),"SOWS","addFile",2);
+			} finally {
+				eos.cleanup(c,s);
+			}
+		}
+	}
+	
+	
+	/**
+	 * Removes the file from the SOW.
+	 * @param sowid
+	 * @param fileid
+	 */
+	public void removeFile(String sowid, String fileid) { 
+		if(eos.active())
+		{
+			Connection c = eos.c();
+			Statement  s = null;
+			try { 
+				
+				//TODO ACTIVITY
+				int sid = eos.d(sowid);
+				int fid = eos.d(fileid);
+				s = c.createStatement();
+				String sql = "delete from rr_sow_files where sowid=" + sid + " and fileid=" + fid + "";
+				s.execute(sql);
+				
+			} catch(Exception e)
+			{
+				eos.log("Errors removing file. Err:" + e.toString(),"SOWS","removeFile",2);
+			} finally { 
+				eos.cleanup(c,s);
+			}
+		}
+	}
+	
+	/**
+	 * Get all linked files.
+	 * @param sowid
+	 * @return
+	 */
+	public ArrayList<com.eos.files.File> files(String sowid)
+	{
+		ArrayList<com.eos.files.File> lst = new ArrayList<com.eos.files.File>();
+		
+		Connection c = eos.c();
+		Statement  s = null;
+		ResultSet rs = null;
+		
+		try {
+			
+			s = c.createStatement();
+			int sid = eos.d(sowid);
+			String sql = "select distinct fileid,roleid from rr_sow_files where sowid=" + sid + "";
+			rs = s.executeQuery(sql);
+			while(rs.next())
+			{
+				String fileid = eos.e(rs.getInt(1));
+				com.eos.files.File file = eos.files().getFile(fileid);
+				if(file!=null) {
+					// if(eos.users().isAllowed(file.roleid())) { 
+						 lst.add(file);
+					// }
+				}
+			}
+			
+		} catch(Exception e)
+		{
+			eos.log("Errors getting files. Err:" + e.toString(),"SOWs","files",2);
+		} finally { 
+			eos.cleanup(c,s,rs);
+		}
+		return lst;
+	}
+	
+	
+	/**
 	 * Update the SOW core.
 	 * @param sowid
 	 * @param title
@@ -22,7 +122,7 @@ public class SOWS {
 	 * @param starts
 	 * @param ends
 	 */
-	public  void updateCore(String sowid, String title, String desc,  String starts, String ends)
+	public  void updateCore(String sowid, String title, String desc,  String starts, String ends,String status)
 	{
 		if(eos.active())
 		{
@@ -38,13 +138,15 @@ public class SOWS {
 				desc  = com.eos.Eos.clean(desc);
 				starts = com.eos.utils.Calendar.clean(starts);
 				ends   = com.eos.utils.Calendar.clean(ends);
+				int iS = com.eos.utils.Strings.getIntFromString(status);
 				
 				s = c.createStatement();
 				s.addBatch("update rr_sow set title='" + title + "' where sowid=" + sid + "");
 				s.addBatch("update rr_sow set description='" + desc + "' where sowid=" + sid + "");
 				s.addBatch("update rr_sow set starts='" + starts + "' where sowid=" + sid + "");
 				s.addBatch("update rr_sow set ends='" + ends + "' where sowid=" + sid + "");
-				s.addBatch("update rr_sow set firstesit=1 where sowid=" + sid + "");
+				s.addBatch("update rr_sow set firstedit=1 where sowid=" + sid + "");
+				s.addBatch("update rr_sow set status=" + iS + " where sowid=" + sid + "");
 				s.executeBatch();
 				
 			} catch(Exception e)

@@ -19,11 +19,97 @@ public class Constants {
 	public static final String[] VENTURE_STATE_COLORS = { "warning", "success", "info", "danger" };
 
 	public static final String[] EVENT_STATES = { "Inactive", "Active", "Completed" };
+	
+
 	public static final String[] EVENT_PRIORITIES = { "Low", "Medium", "High", "Urgent" };
+	public static final String[] EVENT_PRIORITY_COLORS = { "secondary", "info", "warning", "danger" };
+	
+	public static final int EVENT_STATE_INACTIVE = 0;
+	public static final int EVENT_STATE_ACTIVE = 1;
+	public static final int EVENT_STATE_COMPLETED = 2;
 
 	public static final String[] ARTICLE_STATES = { "Editing", "Review", "Live", "Archived" };
 	public static final String[] ARTICLE_STATE_COLORS = { "warning", "info", "success", "danger" };
+	
+	
+	public static final String[] SOW_STATES = { "In Review", "Active", "Paused", "Completed" };
+	public static final String[] SOW_STATE_COLORS = { "warning", "success", "info", "danger" };
+	
+	
+	public static final String[] ACTIVITY_PRIORITIES = { "General","Important"};
+	
+	
+	
+	/**
+	 * Get the venture roles as a selection list.
+	 * @param selected
+	 * @return
+	 */
+	public static String getVentureRolesAsString(int selected) { 
+		StringBuffer sb = new StringBuffer();
+		
+		int size = VENTURE_ROLES.length;
+		for(int i = 0; i < size;i++) { 
+			String _r = (String)VENTURE_ROLES[i];
+			if(selected == i) {
+				sb.append("<option selected value=" + i + ">" + _r + "</option>");
+			} else { 
+				sb.append("<option value=" + i + ">" + _r + "</option>");
+			}
+		} 
+		
+		return sb.toString();
+	}
+	
+	
+	public static String sowStatusAsString(int status) {
+		String s = null;
+		try {
+			s = (String) SOW_STATES[status];
+		} catch (Exception e) {
+			s = (String) SOW_STATES[0];
+		}
+		return s;
+	}
+	
+	
+	public static String sowStatusColorAsString(int status) {
+		String s = null;
+		try {
+			s = (String) SOW_STATE_COLORS[status];
+		} catch (Exception e) {
+			s = (String) SOW_STATE_COLORS[0];
+		}
+		return s;
+	}
+	
+	public static String eventPriorityColorAsString(int priority) {
+		String s = null;
+		try {
+			s = (String) EVENT_PRIORITY_COLORS[priority];
+		} catch (Exception e) {
+			s = (String) EVENT_PRIORITY_COLORS[0];
+		}
+		return s;
+	}
+	
 
+	public static String sowStatesAsSelection(int current) {
+		StringBuffer sb = new StringBuffer();
+
+		for (int i = 0; i < SOW_STATES.length; i++) {
+			String p = (String) SOW_STATES[i];
+			if (i == current) {
+				sb.append("<option select value=" + i + ">" + p + "</option>");
+			} else {
+				sb.append("<option value=" + i + ">" + p + "</option>");
+			}
+		}
+
+		return sb.toString();
+	}
+	
+	
 	public static String articleStatusAsString(int status) {
 		String s = null;
 		try {

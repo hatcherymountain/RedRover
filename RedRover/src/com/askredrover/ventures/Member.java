@@ -13,5 +13,6 @@ public interface Member {
 	public String roleAsString();
 
 	public boolean owner();
-
+	
+	public boolean editor();
 }

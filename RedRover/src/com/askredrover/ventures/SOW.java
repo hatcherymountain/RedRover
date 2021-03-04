@@ -29,5 +29,7 @@ public interface SOW {
 	public Date signDate();
 	
 	public boolean edited();
+	
+	public String statusAsString();
 
 }

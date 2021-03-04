@@ -76,6 +76,10 @@ public class SowObject implements SOW {
 			return false;
 		}
 	}
+	
+	public String statusAsString() { 
+		return com.askredrover.Constants.sowStatusAsString(status);
+	}
 
 	public Date signDate() {
 		return signdate;

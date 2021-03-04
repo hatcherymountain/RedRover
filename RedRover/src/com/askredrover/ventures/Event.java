@@ -34,6 +34,8 @@ public interface Event {
 	public int priority();
 
 	public String priorityAsString();
+	
+	public String priorityColorAsString();
 
 	public int progress();
 

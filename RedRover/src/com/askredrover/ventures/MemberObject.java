@@ -33,11 +33,19 @@ public class MemberObject implements Member {
 	}
 
 	public boolean owner() {
-		if (owner == 1) {
+		if (owner == 1 || role == com.askredrover.Constants.ROLE_OWNER) {
 			return true;
 		} else {
 			return false;
 		}
 	}
-
+	
+	
+	public boolean editor() { 
+		if(role==com.askredrover.Constants.ROLE_EDITOR) { 
+			return true;
+		} else { 
+			return false;
+		}
+	}
 }

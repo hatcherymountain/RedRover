@@ -49,8 +49,14 @@ public class EventObject implements Event {
 	public int progress() { return progress; }
 	public int status() { return status; }
 	
-	public String statusAsString() { return com.askredrover.Constants.eventStatusAsString(status); } 
+	public String statusAsString() {
+		return com.askredrover.Constants.eventStatusAsString(status);
+	}
 	
 	
+	public String priorityColorAsString()
+	{
+		return com.askredrover.Constants.eventPriorityColorAsString(priority);
+	}
 	
 }
