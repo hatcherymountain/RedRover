@@ -1,0 +1,591 @@
+package com.askredrover.wisdom.search;
+
+import java.util.Arrays;
+
+import java.util.LinkedHashSet;
+import java.sql.*;
+import java.util.ArrayList;
+import com.eos.Eos;
+import com.askredrover.RedRover;
+import com.askredrover.wisdom.Article;
+
+public class Searches {
+
+	private Eos eos = null;
+	private RedRover rr = null;
+
+	public Searches(Eos eos, RedRover rr) {
+		this.eos = eos;
+		this.rr = rr;
+	}
+
+	/**
+	 * Is this person in the store if it is designated as such?
+	 * 
+	 * @param storeid
+	 * @return
+	 */
+	public boolean isInStore(int storeid) {
+		boolean is = false;
+
+		if (eos.active()) {
+
+			if (eos.user().getCompanyId() == storeid) {
+				is = true;
+			}
+
+		}
+
+		return is;
+	}
+
+	/**
+	 * Get recent articles.
+	 * 
+	 * @return ArrayList of Article.class
+	 */
+	public ArrayList<com.askredrover.wisdom.Article> recentArticles() {
+		ArrayList<com.askredrover.wisdom.Article> lst = new ArrayList<com.askredrover.wisdom.Article>();
+		if (eos.active()) {
+			Connection c = eos.c();
+			Statement s = null;
+			ResultSet rs = null;
+
+			try {
+
+				s = c.createStatement();
+				String sql = "select articleid from wisdom_articles where status=2 order by added desc limit 8";
+				rs = s.executeQuery(sql);
+
+				while (rs.next()) {
+					int iA = rs.getInt(1);
+					String aid = eos.e(iA);
+					com.askredrover.wisdom.Article article = rr.wisdom().articles().get(aid);
+					if (article != null) {
+
+						if (eos.getUsers().isAllowed(article.roleid())) {
+
+							if (article.storeid() > 0) {
+
+								if (isInStore(article.storeid())) {
+									lst.add(article);
+								}
+
+							} else {
+
+								lst.add(article);
+
+							}
+
+						}
+
+					}
+				}
+
+			} catch (Exception e) {
+				eos.log("Errors getting recent articles. Err:" + e.toString(), "Searches", "recentArticles", 2);
+			} finally {
+				eos.cleanup(c, s, rs);
+			}
+
+		}
+
+		return lst;
+	}
+
+	/**
+	 * Recent Files.
+	 * 
+	 * @param threshold
+	 * @return
+	 */
+	public ArrayList<com.eos.files.File> recentFiles() {
+
+		ArrayList<com.eos.files.File> lst = new ArrayList<com.eos.files.File>();
+
+		if (eos.active()) {
+			Connection c = eos.c();
+			Statement s = null;
+			ResultSet rs = null;
+
+			try {
+
+				s = c.createStatement();
+
+				String sql = "select fileid from eos_files where categoryid>0 and status=1 order by added desc limit 8";
+
+				rs = s.executeQuery(sql);
+
+				while (rs.next()) {
+					int fid = rs.getInt(1);
+					String _f = eos.e(fid);
+					com.eos.files.File file = eos.files().getFile(_f);
+					if (file != null) {
+
+						if (rr.wisdom().files().passSecurityCheck(file)) {
+
+							if (file.companyid() > 0) {
+
+								if (isInStore(file.companyid())) {
+									lst.add(file);
+								}
+
+							} else {
+
+								lst.add(file);
+
+							}
+
+						}
+
+					}
+				}
+
+			} catch (Exception e) {
+				eos.log("Errors getting recent files. Err:" + e.toString(), "Searches", "recentFiles", 2);
+			} finally {
+				eos.cleanup(c, s, rs);
+			}
+		}
+
+		return lst;
+	}
+
+	/**
+	 * Get all articles
+	 * 
+	 * @return ArrayList Article.class
+	 */
+	public ArrayList<com.askredrover.wisdom.Article> allArticles() {
+
+		ArrayList<com.askredrover.wisdom.Article> lst = new ArrayList<com.askredrover.wisdom.Article>();
+
+		if (eos.active()) {
+
+			Connection c = eos.c();
+			Statement s = null;
+			ResultSet rs = null;
+
+			try {
+
+				ArrayList<com.askredrover.wisdom.Article> origLst = rr.wisdom().articles().getAll();
+				int size = origLst.size();
+
+				for (int i = 0; i < size; i++) {
+
+					com.askredrover.wisdom.Article a = (com.askredrover.wisdom.Article) origLst.get(i);
+
+					if (a.categoryid() > 0 && a.live()) {
+
+						if (a.storeid() > 0) {
+
+							if (isInStore(a.storeid())) {
+								lst.add(a);
+							}
+
+						} else {
+							lst.add(a);
+						}
+
+					}
+				}
+
+			} catch (Exception e) {
+				eos.log("Errors getting list of all articles. Err;" + e.toString(), "Searches", "allArticles", 2);
+			} finally {
+				eos.cleanup(c, s, rs);
+			}
+
+		}
+
+		return lst;
+
+	}
+
+	/**
+	 * Get back ALL files. The file must be categoried, be active and the user must
+	 * have access to the file AND if a store is defined be a member of that store.
+	 * 
+	 * @return ArrayList of File.class.
+	 */
+	public ArrayList<com.eos.files.File> allFiles() {
+		ArrayList<com.eos.files.File> lst = new ArrayList<com.eos.files.File>();
+		if (eos.active()) {
+
+			Connection c = eos.c();
+			Statement s = null;
+			ResultSet rs = null;
+
+			try {
+
+				ArrayList<com.eos.files.File> origLst = eos.files().getAccountFiles(eos.user().getAccountId());
+				int size = origLst.size();
+
+				for (int i = 0; i < size; i++) {
+					com.eos.files.File f = (com.eos.files.File) origLst.get(i);
+
+					if (f.categoryid() > 0 && f.active()) {
+
+						if (rr.wisdom().files().passSecurityCheck(f)) {
+							if (f.companyid() > 0) {
+
+								if (isInStore(f.companyid())) {
+									lst.add(f);
+								}
+
+							} else {
+								lst.add(f);
+							}
+
+						}
+					}
+				}
+
+			} catch (Exception e) {
+				eos.log("Errors getting list of all files. Err;" + e.toString(), "Searches", "allFiles", 2);
+			} finally {
+				eos.cleanup(c, s, rs);
+			}
+
+		}
+		return lst;
+	}
+	
+	
+	/**
+	 * Tracks that someone searched.
+	 * @param term
+	 */
+	private void trackSearch(String term, int filesize, int articlesize, int tutsize)
+	{
+		if(eos.active()) { 
+			
+			term = com.eos.Eos.clean(term);
+			if(term.length() > 1)
+			{
+				
+				Connection c = eos.c();
+				Statement  s = null;
+				
+				try { 
+					
+					s = c.createStatement();
+					
+					int eid = eos.account().eid();
+					int uid = eos.user().getUserId();
+					int aid = eos.user().getAccountId();
+					int cid = eos.user().getCompanyId();
+					
+					String today = com.eos.utils.Calendar.getTodayForSQL();
+					
+					String sql = "insert into wisdom_searches values(null,"+eid+","+aid+","+cid+","+uid+",'" + today + "',null,'"+term+"',"+filesize+","+articlesize+","+tutsize+")";
+					s.execute(sql);
+					
+				} catch(Exception e)
+				{
+					eos.log("Errors tracking search. Err:" + e.toString(),"Searches","trackSearch",2);
+				} finally { 
+					eos.cleanup(c,s);
+				}
+			}
+			
+		}
+	}
+	
+	
+	/**
+	 * Searches both files and the articles (and later tutorials) using term. We use
+	 * full text search ... and dedup results.
+	 * 
+	 * @param term
+	 * @return
+	 */
+	public Result search(String term) {
+		Result res = null;
+		if (eos.active()) {
+
+			term = com.eos.utils.Strings.absoluteTruncation(term,255); //just for safety
+			if(term.length() > 1) { 
+				
+				//Activity
+				ArrayList<com.eos.files.File> files = searchFiles(term);
+				ArrayList<Article> articles = searchArticles(term);
+				res = new ResultObject(files, articles);
+				
+				trackSearch(term,files.size(),articles.size(),0);
+			}
+
+		}
+		return res;
+	}
+
+	/**
+	 * Search through title and description
+	 * 
+	 * @param term
+	 * @return
+	 */
+	private ArrayList<com.eos.files.File> searchFiles(String term) {
+
+		ArrayList<com.eos.files.File> lst = new ArrayList<com.eos.files.File>();
+		ArrayList<Integer> lstTitles = new ArrayList<Integer>();
+		ArrayList<Integer> lstDesc = new ArrayList<Integer>();
+
+		term = com.eos.Eos.clean(term);
+		if (term.length() > 1) {
+
+			lstTitles = searchFileTitles(term);
+			lstDesc = searchFileDescriptions(term);
+			lst = deduplicatedFiles(lstTitles, lstDesc);
+
+		}
+
+		return lst;
+	}
+
+	/**
+	 * Get deduplicated Articles & their sections.
+	 * 
+	 * @param t
+	 * @param d
+	 * @param s
+	 * @return
+	 */
+	private ArrayList<Article> deduplicatedArticles(ArrayList<Integer> t, ArrayList<Integer> d, ArrayList<Integer> s) {
+		ArrayList<Article> lst = new ArrayList<Article>();
+		t.addAll(d);
+		t.addAll(s);
+
+		LinkedHashSet<Integer> hashSet = new LinkedHashSet<>(t);
+		ArrayList<Integer> deduped = new ArrayList<>(hashSet);
+
+		int size = deduped.size();
+		for (int i = 0; i < size; i++) {
+
+			int iA = (int) deduped.get(i);
+			String aid = eos.e(iA);
+			Article a = rr.wisdom().articles().get(aid);
+			if (a != null) {
+
+				if (a.status() == 2) { // live
+
+					if (eos.users().isAllowed(a.roleid())) {
+
+						if (a.storeid() > 0) {
+
+							if (this.isInStore(a.storeid())) {
+								lst.add(a);
+							}
+
+						} else {
+
+							lst.add(a);
+
+						}
+
+					}
+
+				}
+
+			}
+
+		}
+		return lst;
+	}
+
+	private ArrayList<com.eos.files.File> deduplicatedFiles(ArrayList<Integer> t, ArrayList<Integer> d) {
+		ArrayList<com.eos.files.File> lst = new ArrayList<com.eos.files.File>();
+		t.addAll(d);
+
+		LinkedHashSet<Integer> hashSet = new LinkedHashSet<>(t);
+		ArrayList<Integer> deduped = new ArrayList<>(hashSet);
+
+		/** Now let's get files and check permissions **/
+
+		int size = deduped.size();
+		for (int i = 0; i < size; i++) {
+			int iF = (int) deduped.get(i);
+			String fid = eos.e(iF);
+			com.eos.files.File file = eos.files().getFile(fid);
+
+			/**
+			 * Now Check
+			 */
+
+			if (file.status() == 1) {
+
+				if (eos.users().isAllowed(file.roleid())) {
+
+					if (file.companyid() > 0) {
+
+						if (this.isInStore(file.companyid())) {
+							lst.add(file);
+						}
+
+					} else {
+
+						lst.add(file);
+
+					}
+
+				}
+
+			}
+
+		}
+
+		return lst;
+	}
+
+	public ArrayList<Article> searchArticles(String term) {
+		ArrayList<Article> lst = new ArrayList<Article>();
+		term = com.eos.Eos.clean(term);
+		if (term.length() > 1) {
+
+			ArrayList<Integer> lstTitles = searchArticleTitles(term);
+			ArrayList<Integer> lstDesc = searchArticleDescriptions(term);
+			ArrayList<Integer> lstSections = searchArticleSections(term);
+			lst = deduplicatedArticles(lstTitles, lstDesc, lstSections);
+
+		}
+
+		return lst;
+	}
+
+	private ArrayList<Integer> searchArticleSections(String term) {
+
+		ArrayList<Integer> lst = new ArrayList<Integer>();
+		Connection c = eos.c();
+		Statement s = null;
+		ResultSet rs = null;
+
+		try {
+
+			s = c.createStatement();
+			rs = s.executeQuery("select articleid from wisdom_article_sections where match(text1) against('" + term
+					+ "' WITH QUERY EXPANSION)");
+			while (rs.next()) {
+				lst.add(rs.getInt(1));
+			}
+
+		} catch (Exception e) {
+			eos.log("Errors searching article titles. Err;" + e.toString(), "Searches", "searchArticleTitles", 2);
+		} finally {
+			eos.cleanup(c, s, rs);
+		}
+
+		return lst;
+
+	}
+
+	private ArrayList<Integer> searchArticleDescriptions(String term) {
+
+		ArrayList<Integer> lst = new ArrayList<Integer>();
+		Connection c = eos.c();
+		Statement s = null;
+		ResultSet rs = null;
+
+		try {
+
+			s = c.createStatement();
+			rs = s.executeQuery("select articleid from wisdom_articles where match(description) against('" + term
+					+ "' WITH QUERY EXPANSION)");
+			while (rs.next()) {
+				lst.add(rs.getInt(1));
+			}
+
+		} catch (Exception e) {
+			eos.log("Errors searching article titles. Err;" + e.toString(), "Searches", "searchArticleTitles", 2);
+		} finally {
+			eos.cleanup(c, s, rs);
+		}
+
+		return lst;
+
+	}
+
+	private ArrayList<Integer> searchArticleTitles(String term) {
+
+		ArrayList<Integer> lst = new ArrayList<Integer>();
+		Connection c = eos.c();
+		Statement s = null;
+		ResultSet rs = null;
+
+		try {
+
+			s = c.createStatement();
+			rs = s.executeQuery("select articleid from wisdom_articles where match(title) against('" + term
+					+ "' WITH QUERY EXPANSION)");
+			while (rs.next()) {
+				lst.add(rs.getInt(1));
+			}
+
+		} catch (Exception e) {
+			eos.log("Errors searching article titles. Err;" + e.toString(), "Searches", "searchArticleTitles", 2);
+		} finally {
+			eos.cleanup(c, s, rs);
+		}
+
+		return lst;
+
+	}
+
+	/**
+	 * Search titles
+	 * 
+	 * @param term
+	 * @return
+	 */
+	private ArrayList<Integer> searchFileTitles(String term) {
+
+		ArrayList<Integer> lst = new ArrayList<Integer>();
+		Connection c = eos.c();
+		Statement s = null;
+		ResultSet rs = null;
+
+		try {
+
+			s = c.createStatement();
+			rs = s.executeQuery(
+					"select fileid from eos_files where match(title) against('" + term + "' WITH QUERY EXPANSION)");
+			while (rs.next()) {
+				lst.add(rs.getInt(1));
+			}
+
+		} catch (Exception e) {
+			eos.log("Errors searching file titles. Err;" + e.toString(), "Searches", "searchFileTitles", 2);
+		} finally {
+			eos.cleanup(c, s, rs);
+		}
+
+		return lst;
+
+	}
+
+	private ArrayList<Integer> searchFileDescriptions(String term) {
+
+		ArrayList<Integer> lst = new ArrayList<Integer>();
+		Connection c = eos.c();
+		Statement s = null;
+		ResultSet rs = null;
+
+		try {
+
+			s = c.createStatement();
+			rs = s.executeQuery("select fileid from eos_files where match(description) against('" + term
+					+ "' WITH QUERY EXPANSION)");
+			while (rs.next()) {
+				lst.add(rs.getInt(1));
+			}
+
+		} catch (Exception e) {
+			eos.log("Errors searching file descriptions. Err;" + e.toString(), "Searches", "searchFileTitles", 2);
+		} finally {
+			eos.cleanup(c, s, rs);
+		}
+
+		return lst;
+
+	}
+
+}

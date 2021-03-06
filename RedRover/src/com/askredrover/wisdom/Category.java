@@ -17,5 +17,7 @@ public interface Category {
 	public int siblingid();
 
 	public boolean isSibling();
+	
+	public boolean isParent();
 
 }

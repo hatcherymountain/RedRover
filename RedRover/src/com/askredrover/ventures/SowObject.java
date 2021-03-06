@@ -22,7 +22,7 @@ public class SowObject implements SOW {
 		this.authorizer = authorizer;
 		this.signed = signed;
 		this.signdate = signdate;
-		this.edited=edited;
+		this.edited = edited;
 	}
 
 	public int sowid() {
@@ -76,19 +76,19 @@ public class SowObject implements SOW {
 			return false;
 		}
 	}
-	
-	public String statusAsString() { 
+
+	public String statusAsString() {
 		return com.askredrover.Constants.sowStatusAsString(status);
 	}
 
 	public Date signDate() {
 		return signdate;
 	}
-	
-	public boolean edited() { 
-		if(edited==1) { 
-			return true; 
-		} else { 
+
+	public boolean edited() {
+		if (edited == 1) {
+			return true;
+		} else {
 			return false;
 		}
 	}

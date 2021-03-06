@@ -39,12 +39,11 @@ public class MemberObject implements Member {
 			return false;
 		}
 	}
-	
-	
-	public boolean editor() { 
-		if(role==com.askredrover.Constants.ROLE_EDITOR) { 
+
+	public boolean editor() {
+		if (role == com.askredrover.Constants.ROLE_EDITOR) {
 			return true;
-		} else { 
+		} else {
 			return false;
 		}
 	}

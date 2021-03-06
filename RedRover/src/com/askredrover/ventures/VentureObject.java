@@ -54,12 +54,12 @@ public class VentureObject implements Venture {
 	public int status() {
 		return status;
 	}
-	
-	public String statusAsString() { 
+
+	public String statusAsString() {
 		return com.askredrover.Constants.ventureStatusAsString(status);
 	}
-	
-	public String statusColorAsString() { 
+
+	public String statusColorAsString() {
 		return com.askredrover.Constants.ventureStatusColorAsString(status);
 	}
 

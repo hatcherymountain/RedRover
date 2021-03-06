@@ -28,6 +28,10 @@ public interface Article {
 
 	public int roleid();
 
+	public int categoryid();
+
 	public String statusAsString();
+	
+	public boolean live();
 
 }

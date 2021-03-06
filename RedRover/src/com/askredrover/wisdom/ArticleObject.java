@@ -1,33 +1,45 @@
 package com.askredrover.wisdom;
 
 public class ArticleObject implements Article {
-	
-	private int articleid, accountid,storeid,author,essential,headerimg,status,roleid = 0;
-	private String title,description,tags = null;
+
+	private int articleid, accountid, storeid, author, essential, headerimg, status, roleid, categoryid = 0;
+	private String title, description, tags = null;
 	private java.sql.Date added = null;
 	private java.sql.Timestamp entered = null;
-	
-	public ArticleObject(int articleid,int accountid, int storeid, String title, String description, java.sql.Date added, java.sql.Timestamp entered, int author, int essential,
-			String tags, int headerimg, int status, int roleid)
-	{
-		this.articleid=articleid;
-		this.accountid=accountid;
-		this.storeid=storeid;
-		this.title=title;
+
+	public ArticleObject(int articleid, int accountid, int storeid, String title, String description,
+			java.sql.Date added, java.sql.Timestamp entered, int author, int essential, String tags, int headerimg,
+			int status, int roleid, int categoryid) {
+		this.articleid = articleid;
+		this.accountid = accountid;
+		this.storeid = storeid;
+		this.title = title;
 		this.description = description;
-		this.added=added;
+		this.added = added;
 		this.entered = entered;
-		this.author=author;
-		this.essential=essential;
-		this.tags=tags;
-		this.headerimg=headerimg;
-		this.status=status;
-		this.roleid=roleid;
+		this.author = author;
+		this.essential = essential;
+		this.tags = tags;
+		this.headerimg = headerimg;
+		this.status = status;
+		this.roleid = roleid;
+		this.categoryid = categoryid;
 	}
 	
-	
+	public boolean live() { 
+		if(status==2) { 
+			return true;
+		} else { 
+			return false;
+		}
+	}
+
 	public int articleid() {
 		return articleid;
+	}
+
+	public int categoryid() {
+		return categoryid;
 	}
 
 	public int accountid() {

@@ -11,9 +11,9 @@ public class RedRover {
 	private Eos eos = null;
 	private Numbers numbers = null;
 	private Ventures ventures = null;
-	private Messages messages = null;	
-	private Events   events   = null;
-	
+	private Messages messages = null;
+	private Events events = null;
+
 	private boolean showWisdom = false;
 	private boolean showVentures = false;
 	private Wisdom wisdom = null;
@@ -24,41 +24,40 @@ public class RedRover {
 		showWisdom = true;
 		showVentures = true;
 	}
-	
+
 	/**
-	 * Get all ventures	
+	 * Get all ventures
+	 * 
 	 * @return
 	 */
-	public Ventures ventures() { 
-		if(ventures==null)
-		{
-			ventures = new Ventures(eos,this);
+	public Ventures ventures() {
+		if (ventures == null) {
+			ventures = new Ventures(eos, this);
 		}
 		return ventures;
 	}
-	
-	
-	public Events events() { 
-		if(events == null)
-		{
-			events = new Events(eos,this);
+
+	public Events events() {
+		if (events == null) {
+			events = new Events(eos, this);
 		}
 		return events;
 	}
-	
+
 	/**
 	 * Where do we want to put the files?
+	 * 
 	 * @return
 	 */
-	public String fileLocation() { 
-		String loc = ""; 
-		if(eos.active())
-		{
+	public String fileLocation() {
+		String loc = "";
+		if (eos.active()) {
 			int eid = eos.account().eid();
-			loc= "wisdom/"+eid+"";
+			loc = "wisdom/" + eid + "";
 		}
 		return loc;
 	}
+
 	/**
 	 * Later we can add more layers ABOVE the EOS idea of an ADMIN. We need to do
 	 * this as Pointr creates some problems
@@ -76,8 +75,7 @@ public class RedRover {
 			return false;
 		}
 	}
-	
-	
+
 	public boolean editor() {
 		if (eos.active()) {
 			if (eos.isContributor()) {
@@ -89,8 +87,6 @@ public class RedRover {
 			return false;
 		}
 	}
-	
-	
 
 	public boolean wisdomEnabled() {
 		return showWisdom;

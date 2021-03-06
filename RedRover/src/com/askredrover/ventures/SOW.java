@@ -27,9 +27,9 @@ public interface SOW {
 	public boolean signed();
 
 	public Date signDate();
-	
+
 	public boolean edited();
-	
+
 	public String statusAsString();
 
 }

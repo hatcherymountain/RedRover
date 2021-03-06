@@ -65,7 +65,7 @@ public class Events {
 
 				String sql = "select eventid,eid,accountid,title,description,milestone, dateof,due,added,entered,owner,priority,progress,status from rr_events where vid="
 						+ id + " and sow=1 order by due desc";
-				
+
 				rs = s.executeQuery(sql);
 				while (rs.next()) {
 					int e = rs.getInt(1);
@@ -98,33 +98,34 @@ public class Events {
 
 		return lst;
 	}
-	
+
 	/**
 	 * Sets complete
+	 * 
 	 * @param sowid
 	 */
 	public void completeSOWEvent(String eventid) {
-		if(eos.active()) {
+		if (eos.active()) {
 			Connection c = eos.c();
-			Statement  s = null;
-			try { 
-				
+			Statement s = null;
+			try {
+
 				s = c.createStatement();
 				int eid = eos.d(eventid);
-				//ACTIVITY
-				
-				String sql = "update rr_events set status=" + com.askredrover.Constants.EVENT_STATE_COMPLETED + " where eventid=" + eid + "";
+				// ACTIVITY
+
+				String sql = "update rr_events set status=" + com.askredrover.Constants.EVENT_STATE_COMPLETED
+						+ " where eventid=" + eid + "";
 				s.execute(sql);
-				
-			} catch(Exception e) { 
-				eos.log("Errors completing SOW task. Err:" + e.toString(),"Events","completeSOWEvent",2);
-			} finally { 
-				eos.cleanup(c,s);
+
+			} catch (Exception e) {
+				eos.log("Errors completing SOW task. Err:" + e.toString(), "Events", "completeSOWEvent", 2);
+			} finally {
+				eos.cleanup(c, s);
 			}
 		}
 	}
-	
-	
+
 	/**
 	 * Adds a SOW /task/event
 	 * 
@@ -143,9 +144,10 @@ public class Events {
 
 				int id = eos.d(vid);
 				int uid = eos.user().getUserId();
-					int iPriority = com.eos.utils.Strings.getIntFromString(priority);
+				int iPriority = com.eos.utils.Strings.getIntFromString(priority);
 
-				add(id, title, description, 1, 1, "", "", uid, iPriority, 0,com.askredrover.Constants.EVENT_STATE_ACTIVE);
+				add(id, title, description, 1, 1, "", "", uid, iPriority, 0,
+						com.askredrover.Constants.EVENT_STATE_ACTIVE);
 
 			} catch (Exception e) {
 				eos.log("Errors adding SOW task. Err:" + e.toString(), "Events", "addSOWEvent", 2);
@@ -190,26 +192,26 @@ public class Events {
 				String today = com.eos.utils.Calendar.getTodayForSQL();
 
 				String _due = "";
-				
-					if(due.length()==0) { 
-						_due = com.eos.utils.Calendar.NO_EXPIRE_DATE;
-					} else { 
-						_due = com.eos.utils.Calendar.clean(due);
-				}
-					
-				String _dateOf = ""; 
-					if(dateof.length() ==0) { 
-						_dateOf = com.eos.utils.Calendar.NO_EXPIRE_DATE;
-					} else { 
-						_dateOf = com.eos.utils.Calendar.clean(dateof);
-					}
 
-				String sql = "insert into rr_events values(null,"+eid+","+accountid+","+vid+",'"+title+"','"+description+"',"+sow+","+milestone+","
-						+ "'"+_dateOf+"','" + _due+"','"+today+"',null,"+ownerid+","+priority+","+progress+","+status+")";
+				if (due.length() == 0) {
+					_due = com.eos.utils.Calendar.NO_EXPIRE_DATE;
+				} else {
+					_due = com.eos.utils.Calendar.clean(due);
+				}
+
+				String _dateOf = "";
+				if (dateof.length() == 0) {
+					_dateOf = com.eos.utils.Calendar.NO_EXPIRE_DATE;
+				} else {
+					_dateOf = com.eos.utils.Calendar.clean(dateof);
+				}
+
+				String sql = "insert into rr_events values(null," + eid + "," + accountid + "," + vid + ",'" + title
+						+ "','" + description + "'," + sow + "," + milestone + "," + "'" + _dateOf + "','" + _due
+						+ "','" + today + "',null," + ownerid + "," + priority + "," + progress + "," + status + ")";
 				eos.log(sql);
 
 				ps = c.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
-				
 
 				ps.executeUpdate();
 

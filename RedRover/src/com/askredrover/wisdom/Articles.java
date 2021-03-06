@@ -83,18 +83,30 @@ public class Articles {
 
 				String aid = r.getParameter("aid");
 				int id = eos.d(aid);
+				
 				String t = r.getParameter("title");
 				t = com.eos.Eos.clean(t);
+				
 				String d = r.getParameter("description");
 				d = com.eos.Eos.clean(d);
+				
 				String tags = r.getParameter("tags");
 				tags = com.eos.Eos.clean(tags);
+				
 				String es = r.getParameter("essential");
 				int iE = com.eos.utils.Strings.getIntFromString(es);
+				
 				String sid = r.getParameter("storeid");
 				int iS = eos.d(sid);
+				
+				
 				String rid = r.getParameter("roleid");
 				int iR = eos.d(rid);
+				
+				String status = r.getParameter("status");
+				int iStatus = com.eos.utils.Strings.getIntFromString(status);
+				
+				String catid = r.getParameter("catid"); int iCid = eos.d(catid);
 
 				if (t.length() > 0) {
 					s.addBatch("update wisdom_articles set title='" + t + "' where articleid=" + id + "");
@@ -104,6 +116,8 @@ public class Articles {
 				s.addBatch("update wisdom_articles set essential=" + iE + " where articleid=" + id + "");
 				s.addBatch("update wisdom_articles set storeid=" + iS + " where articleid=" + id + "");
 				s.addBatch("update wisdom_articles set roleid=" + iR + " where articleid=" + id + "");
+				s.addBatch("update wisdom_articles set categoryid=" + iCid + " where articleid=" + id + "");
+				s.addBatch("update wisdom_articles set status=" + iStatus + " where articleid=" + id + "");
 
 				s.executeBatch();
 
@@ -131,7 +145,7 @@ public class Articles {
 
 			s = c.createStatement();
 			int aid = eos.d(articleid);
-			String sql = "select accountid,storeid,title,description,added,entered,author,essential,tags,headerimg,status,roleid from wisdom_articles where articleid="
+			String sql = "select accountid,storeid,title,description,added,entered,author,essential,tags,headerimg,status,roleid,categoryid from wisdom_articles where articleid="
 					+ aid + "";
 
 			rs = s.executeQuery(sql);
@@ -148,9 +162,10 @@ public class Articles {
 				int headerimg = rs.getInt(10);
 				int status = rs.getInt(11);
 				int rid = rs.getInt(12);
+				int cid = rs.getInt(13);
 
-				article = new ArticleObject(aid, a, st, t, d, added, entered, author, ess, tags, headerimg, status,
-						rid);
+				article = new ArticleObject(aid, a, st, t, d, added, entered, author, ess, tags, headerimg, status, rid,
+						cid);
 
 			}
 
@@ -162,13 +177,13 @@ public class Articles {
 
 		return article;
 	}
-
+	
 	/**
-	 * Get all articles
-	 * 
+	 * Get articles that are end user facing.
+	 * @param catid
 	 * @return
 	 */
-	public ArrayList<Article> getAll() {
+	public ArrayList<Article> getArticlesForUser(String catid) {
 
 		ArrayList<Article> lst = new ArrayList<Article>();
 
@@ -176,10 +191,11 @@ public class Articles {
 		Statement s = null;
 		ResultSet rs = null;
 		try {
-
+			
+			int cid = eos.d(catid);
 			s = c.createStatement();
 			String sql = "select articleid,accountid,storeid,title,"
-					+ "description,added,entered,author,essential,tags,headerimg,status,roleid from wisdom_articles order by added desc";
+					+ "description,added,entered,author,essential,tags,headerimg,status,roleid from wisdom_articles where categoryid=" + cid + " and status=2 order by added desc";
 
 			rs = s.executeQuery(sql);
 			while (rs.next()) {
@@ -198,7 +214,66 @@ public class Articles {
 				int rid = rs.getInt(13);
 
 				ArticleObject article = new ArticleObject(aid, a, st, t, d, added, entered, author, ess, tags,
-						headerimg, status, rid);
+						headerimg, status, rid, cid);
+				
+				if(st>0) { 
+					
+					if(rr.wisdom().search().isInStore(st)) {
+						lst.add(article);
+					}
+					
+				} else { 
+					lst.add(article);
+				}
+			}
+
+		} catch (Exception e) {
+			eos.log("Errors getting ALL articles for user. Err;" + e.toString(), "Articles", "getArticlesForUser", 2);
+		} finally {
+			eos.cleanup(c, s, rs);
+		}
+
+		return lst;
+	}
+	
+	
+	/**
+	 * Get all articles
+	 * 
+	 * @return
+	 */
+	public ArrayList<Article> getAll() {
+
+		ArrayList<Article> lst = new ArrayList<Article>();
+
+		Connection c = eos.c();
+		Statement s = null;
+		ResultSet rs = null;
+		try {
+
+			s = c.createStatement();
+			String sql = "select articleid,accountid,storeid,title,"
+					+ "description,added,entered,author,essential,tags,headerimg,status,roleid,categoryid from wisdom_articles order by added desc";
+
+			rs = s.executeQuery(sql);
+			while (rs.next()) {
+				int aid = rs.getInt(1);
+				int a = rs.getInt(2);
+				int st = rs.getInt(3);
+				String t = rs.getString(4);
+				String d = rs.getString(5);
+				java.sql.Date added = rs.getDate(6);
+				java.sql.Timestamp entered = rs.getTimestamp(7);
+				int author = rs.getInt(8);
+				int ess = rs.getInt(9);
+				String tags = rs.getString(10);
+				int headerimg = rs.getInt(11);
+				int status = rs.getInt(12);
+				int rid = rs.getInt(13);
+				int cid = rs.getInt(14);
+
+				ArticleObject article = new ArticleObject(aid, a, st, t, d, added, entered, author, ess, tags,
+						headerimg, status, rid, cid);
 				lst.add(article);
 
 			}
@@ -219,9 +294,11 @@ public class Articles {
 	 * @param description
 	 * @param essential
 	 */
-	public String add(String title, String description, String tags, String essential, String storeid, String roleid) {
+	public String add(String title, String description, String tags, String essential, String storeid, String roleid,
+			String categoryid) {
 		String articleid = null;
 		if (eos.isAdmin() || eos.isContributor()) {
+			
 			Connection c = eos.c();
 			PreparedStatement ps = null;
 			ResultSet rs = null;
@@ -237,10 +314,11 @@ public class Articles {
 
 				int aid = eos.user().getAccountId();
 				int uid = eos.user().getUserId();
+				int cid = eos.d(categoryid);
 
 				String sql = "insert into wisdom_articles values(null," + aid + "," + sid + "," + "'" + title + "','"
 						+ description + "','" + today + "',null," + uid + "," + iEssential + ",'" + tags + "',0,0,"
-						+ iRole + ")";
+						+ iRole + "," + cid + ")";
 				// eos.log(sql);
 				ps = c.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
 				ps.executeUpdate();
@@ -305,8 +383,8 @@ public class Articles {
 				text = com.eos.Eos.clean(text);
 				int fid = eos.d(fileid);
 
-				String sql = "insert into wisdom_article_sections values(null," + id + "," + getNextIndex(id) + "," + to + ",'"
-						+ text + "'," + fid + ")";
+				String sql = "insert into wisdom_article_sections values(null," + id + "," + getNextIndex(id) + "," + to
+						+ ",'" + text + "'," + fid + ")";
 				s.execute(sql);
 
 			} catch (Exception e) {
@@ -393,15 +471,15 @@ public class Articles {
 			}
 		}
 	}
-	
+
 	/**
 	 * Removes the entire Article
+	 * 
 	 * @param aid
 	 */
-	public void remove(String aid)
-	{
-		
-		//todo some auditing needed on this.
+	public void remove(String aid) {
+
+		// todo some auditing needed on this.
 		if (eos.isAdmin() || eos.isContributor()) {
 
 			Connection c = eos.c();
@@ -420,9 +498,8 @@ public class Articles {
 				eos.cleanup(c, s);
 			}
 		}
-		
+
 	}
-			
 
 	/**
 	 * Removes a section

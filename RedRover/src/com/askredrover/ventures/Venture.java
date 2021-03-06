@@ -25,9 +25,9 @@ public interface Venture {
 	public int author();
 
 	public int groupid();
-	
+
 	public String statusAsString();
-	
+
 	public String statusColorAsString();
-	
+
 }

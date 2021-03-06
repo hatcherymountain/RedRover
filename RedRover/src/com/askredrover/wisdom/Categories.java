@@ -77,6 +77,78 @@ public class Categories {
 	}
 
 	/**
+	 * How many files are associated with a category?
+	 * 
+	 * @param catid
+	 * @return
+	 */
+	public int countFiles(String catid) {
+		int count = 0;
+
+		if (eos.active()) {
+
+			Connection c = eos.c();
+			Statement s = null;
+			ResultSet rs = null;
+
+			try {
+
+				s = c.createStatement();
+				int cid = eos.d(catid);
+				String sql = "select count(*) from eos_files where categoryid=" + cid + " and status=1";
+				rs = s.executeQuery(sql);
+				while (rs.next()) {
+					count = rs.getInt(1);
+				}
+
+			} catch (Exception e) {
+				eos.log("Errors counting category files. Err:" + e.toString(), "Categories", "countFiles", 2);
+			} finally {
+				eos.cleanup(c, s, rs);
+			}
+
+		}
+
+		return count;
+	}
+
+	/**
+	 * Articles Count
+	 * 
+	 * @param catid
+	 * @return
+	 */
+	public int countArticles(String catid) {
+		int count = 0;
+
+		if (eos.active()) {
+
+			Connection c = eos.c();
+			Statement s = null;
+			ResultSet rs = null;
+
+			try {
+
+				s = c.createStatement();
+				int cid = eos.d(catid);
+				String sql = "select count(*) from wisdom_articles where categoryid=" + cid + " and status=2";
+				rs = s.executeQuery(sql);
+				while (rs.next()) {
+					count = rs.getInt(1);
+				}
+
+			} catch (Exception e) {
+				eos.log("Errors counting category articles. Err:" + e.toString(), "Categories", "countArticles", 2);
+			} finally {
+				eos.cleanup(c, s, rs);
+			}
+
+		}
+
+		return count;
+	}
+
+	/**
 	 * Get parent categories.
 	 * 
 	 * @return
@@ -187,15 +259,14 @@ public class Categories {
 
 	}
 
-	
-	public String categorySelection() { 
+	public String categorySelection() {
 		return categorySelection(eos.e(0));
 	}
-	
-	public String categorySelection(String catid )
-	{
+
+	public String categorySelection(String catid) {
 		return categorySelection(eos.d(catid));
 	}
+
 	/**
 	 * Get a SELECT list of ALL categories including SIBLINGs and return an option
 	 * list.
@@ -217,22 +288,22 @@ public class Categories {
 			ArrayList<Category> kids = this.children(parent.catid());
 			int ksize = kids.size();
 
-			if(parent.catid()==catid) { 
+			if (parent.catid() == catid) {
 				sb.append("<option selected value=\"" + pcid + "\">" + parent.category() + "</option>");
-			} else { 
+			} else {
 				sb.append("<option value=\"" + pcid + "\">" + parent.category() + "</option>");
 			}
-			
+
 			if (ksize > 0) {
 				for (int k = 0; k < ksize; k++) {
 					Category kid = (Category) kids.get(k);
 					String kcid = eos.e(kid.catid());
 					ArrayList<Category> siblings = this.siblings(kid.catid());
 					int sibsize = siblings.size();
-					
-					if(kid.catid()==catid) { 
+
+					if (kid.catid() == catid) {
 						sb.append("<option selected value=\"" + kcid + "\">----" + kid.category() + "</option>");
-					} else { 
+					} else {
 						sb.append("<option value=\"" + kcid + "\">----" + kid.category() + "</option>");
 					}
 					if (sibsize > 0) {
@@ -240,10 +311,12 @@ public class Categories {
 						for (int s = 0; s < sibsize; s++) {
 							Category sibling = (Category) siblings.get(s);
 							String scid = eos.e(sibling.catid());
-							if(sibling.catid()==catid) { 
-								sb.append("<option selected value=\"" + scid + "\">-----------" + sibling.category() + "</option>");
-							} else { 
-								sb.append("<option value=\"" + scid + "\">-----------" + sibling.category() + "</option>");
+							if (sibling.catid() == catid) {
+								sb.append("<option selected value=\"" + scid + "\">-----------" + sibling.category()
+										+ "</option>");
+							} else {
+								sb.append("<option value=\"" + scid + "\">-----------" + sibling.category()
+										+ "</option>");
 							}
 						}
 					}

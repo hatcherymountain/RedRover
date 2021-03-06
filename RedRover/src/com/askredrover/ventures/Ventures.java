@@ -148,38 +148,36 @@ public class Ventures {
 	 */
 	private ArrayList<Member> members(int vid) {
 		ArrayList<Member> lst = new ArrayList<Member>();
-		
-		if(eos.active()) { 
-			
+
+		if (eos.active()) {
+
 			Connection c = eos.c();
-			Statement  s = null;
+			Statement s = null;
 			ResultSet rs = null;
-			
-			try { 
+
+			try {
 				int eid = eos.account().eid();
-				
+
 				s = c.createStatement();
-				String sql = "select userid,userrole,isowner from rr_venture_members where eid=" + eid + " and vid=" + vid + "";
+				String sql = "select userid,userrole,isowner from rr_venture_members where eid=" + eid + " and vid="
+						+ vid + "";
 				rs = s.executeQuery(sql);
-				while(rs.next())
-				{
+				while (rs.next()) {
 					int uid = rs.getInt(1);
-					int ur  = rs.getInt(2);
-					int uo  = rs.getInt(3);
-					Member m = new MemberObject(uid,eid,vid,ur,uo);
+					int ur = rs.getInt(2);
+					int uo = rs.getInt(3);
+					Member m = new MemberObject(uid, eid, vid, ur, uo);
 					lst.add(m);
 				}
-				
-				
-			} catch(Exception e) { 
-				eos.log("Errors getting venture members. Err;" + e.toString(),"Ventures","members",2);
-			} finally { 
-				eos.cleanup(c,s,rs);
+
+			} catch (Exception e) {
+				eos.log("Errors getting venture members. Err;" + e.toString(), "Ventures", "members", 2);
+			} finally {
+				eos.cleanup(c, s, rs);
 			}
-			
+
 		}
-		
-		
+
 		return lst;
 	}
 
