@@ -12,6 +12,7 @@ public class Wisdom {
 	private Categories categories = null;
 	private Articles articles = null;
 	private Searches search = null;
+	private Tutorials tuts = null;
 
 	public Wisdom(Eos eos, RedRover rr) {
 		this.eos = eos;
@@ -24,7 +25,14 @@ public class Wisdom {
 		}
 		return files;
 	}
-
+	
+	
+	public Tutorials tutorials() { 
+		if(tuts==null) { 
+			tuts = new Tutorials(eos,rr);
+		}
+		return tuts;
+	}
 	/**
 	 * All wisdom categories
 	 * 

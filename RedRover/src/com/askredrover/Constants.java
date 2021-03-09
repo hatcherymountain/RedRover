@@ -5,6 +5,11 @@ import com.eos.accounts.User;
 
 public class Constants {
 
+	
+	public static final int ID_FILE = 0;
+	public static final int ID_ARTICLE = 1;
+	public static final int ID_TUTORIAL = 2;
+	
 	public static final int RECENT_PARAMETER = 14;
 
 	public static final String TESTFLOW_KEYPHRASE = "test";
@@ -29,12 +34,23 @@ public class Constants {
 
 	public static final String[] ARTICLE_STATES = { "Editing", "Review", "Live", "Archived" };
 	public static final String[] ARTICLE_STATE_COLORS = { "warning", "info", "success", "danger" };
+	
+	public static final String[] TUTORIAL_STATES = { "Editing", "Review", "Live", "Archived" };
+	public static final String[] TUTORIAL_STATE_COLORS = { "warning", "info", "success", "danger" };
 
 	public static final String[] SOW_STATES = { "In Review", "Active", "Paused", "Completed" };
 	public static final String[] SOW_STATE_COLORS = { "warning", "success", "info", "danger" };
 
 	public static final String[] ACTIVITY_PRIORITIES = { "General", "Important" };
 
+	public static final String[] BOOKMARK_TYPES = {"File","Article","Tutorial"};
+	public static final int BOOKMARK_FILE = 0;
+	public static final int BOOKMARK_ARTICLE = 1;
+	public static final int BOOKMARK_TUTORIAL = 2;
+	
+	
+	
+	
 	/**
 	 * Get the venture roles as a selection list.
 	 * 
@@ -111,6 +127,17 @@ public class Constants {
 		}
 		return s;
 	}
+	
+	public static String tutorialStatusAsString(int status) {
+		String s = null;
+		try {
+			s = (String) TUTORIAL_STATES[status];
+		} catch (Exception e) {
+			s = (String) TUTORIAL_STATES[0];
+		}
+		return s;
+	}
+	
 
 	/**
 	 * Article states as an HTML Selection list.
@@ -132,6 +159,22 @@ public class Constants {
 
 		return sb.toString();
 	}
+	
+	
+	public static String tutorialStatesAsSelection(int current) {
+		StringBuffer sb = new StringBuffer();
+
+		for (int i = 0; i < TUTORIAL_STATES.length; i++) {
+			String p = (String) TUTORIAL_STATES[i];
+			if (i == current) {
+				sb.append("<option selected value=" + i + ">" + p + "</option>");
+			} else {
+				sb.append("<option value=" + i + ">" + p + "</option>");
+			}
+		}
+
+		return sb.toString();
+	}
 
 	public static String articleStatusColorAsString(int status) {
 		String s = null;
@@ -139,6 +182,17 @@ public class Constants {
 			s = (String) ARTICLE_STATE_COLORS[status];
 		} catch (Exception e) {
 			s = (String) ARTICLE_STATE_COLORS[0];
+		}
+		return s;
+	}
+
+	
+	public static String tutorialStatusColorAsString(int status) {
+		String s = null;
+		try {
+			s = (String) TUTORIAL_STATE_COLORS[status];
+		} catch (Exception e) {
+			s = (String) TUTORIAL_STATE_COLORS[0];
 		}
 		return s;
 	}

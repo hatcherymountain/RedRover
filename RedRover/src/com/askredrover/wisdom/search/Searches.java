@@ -532,7 +532,6 @@ public class Searches {
 
 	/**
 	 * Search titles
-	 * 
 	 * @param term
 	 * @return
 	 */
@@ -561,7 +560,12 @@ public class Searches {
 		return lst;
 
 	}
-
+	
+	/**
+	 * Search file descriptions 
+	 * @param term
+	 * @return
+	 */
 	private ArrayList<Integer> searchFileDescriptions(String term) {
 
 		ArrayList<Integer> lst = new ArrayList<Integer>();

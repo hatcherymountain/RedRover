@@ -125,7 +125,37 @@ public class Events {
 			}
 		}
 	}
-
+	
+	
+	/**
+	 * Entirely removes an event.
+	 * @param eventid
+	 */
+	public void remove(String eventid)
+	{
+		if(eos.active())
+		{
+			Connection c = eos.c();
+			Statement  s = null;
+			try { 
+				
+				
+				//TODO Beef up security 
+				//TODO Audit
+				int id = eos.d(eventid);
+				s = c.createStatement();
+				String sql = "delete from rr_events where eventid=" + id + "";
+				s.execute(sql);
+				
+				
+			} catch(Exception e) { 
+				eos.log("Errors removing event. Err:" + e.toString(),"Events","remove",2);
+			} finally { 
+				eos.cleanup(c,s);
+			}
+		}
+	}
+	
 	/**
 	 * Adds a SOW /task/event
 	 * 
@@ -156,6 +186,42 @@ public class Events {
 			}
 		}
 	}
+	
+	/**
+	 * Sets dates from SOW as Milestones.
+	 * @param vid
+	 * @param starts
+	 * @param ends
+	 */
+	public void addSOWDateMilestones(String vid, String starts, String ends) {
+		if (eos.active()) {
+
+			Connection c = eos.c();
+			Statement s = null;
+			try {
+
+				s = c.createStatement();
+
+				int id = eos.d(vid);
+				int uid = eos.user().getUserId();
+				int iPriority = 2;
+
+				add(id,"SOW Starts:" + starts, "", 1, 1,starts, "", uid, iPriority, 0,
+						com.askredrover.Constants.EVENT_STATE_ACTIVE);
+				
+				add(id,"SOW Ends:" + ends, "", 1, 1,ends, "", uid, iPriority, 0,
+						com.askredrover.Constants.EVENT_STATE_ACTIVE);
+
+			} catch (Exception e) {
+				eos.log("Errors adding SOW milestone events. Err:" + e.toString(), "Events", "addSOWDateMilestones", 2);
+			} finally {
+				eos.cleanup(c, s);
+			}
+		}
+	}
+	
+	
+	
 
 	/**
 	 * Does the work of adding the event with all necessary checks etc.
@@ -209,7 +275,7 @@ public class Events {
 				String sql = "insert into rr_events values(null," + eid + "," + accountid + "," + vid + ",'" + title
 						+ "','" + description + "'," + sow + "," + milestone + "," + "'" + _dateOf + "','" + _due
 						+ "','" + today + "',null," + ownerid + "," + priority + "," + progress + "," + status + ")";
-				eos.log(sql);
+				
 
 				ps = c.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
 

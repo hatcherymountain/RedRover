@@ -44,6 +44,12 @@ public class SOWS {
 			}
 		}
 	}
+	
+	public void removeTask(String eventid) {
+		rr.events().remove(eventid);
+	}
+	
+	
 
 	/**
 	 * Removes the file from the SOW.
@@ -108,6 +114,48 @@ public class SOWS {
 		}
 		return lst;
 	}
+	
+	/**
+	 * sets the task state
+	 * @param eventid
+	 * @param status
+	 */
+	public void setTaskState(String eventid, String status)
+	{
+		int iStatus = 0;
+		if(eos.active())
+		{
+			Connection c = eos.c();
+			Statement  s = null;
+			try { 
+				
+				s = c.createStatement();
+				
+				
+				status = com.eos.Eos.clean(status); //just being careful.
+				
+				int id = eos.d(eventid);
+				
+				if(status.equals("true")) { 
+					iStatus = com.askredrover.Constants.EVENT_STATE_COMPLETED;
+				} else { 
+					iStatus = com.askredrover.Constants.EVENT_STATE_ACTIVE;
+				}
+				
+				String sql = "update rr_events set status=" + iStatus + " where eventid=" + id + "";
+				s.execute(sql);
+				
+				
+				
+			} catch(Exception e)
+			{
+				eos.log("Errors setting task status. Err:" + e.toString(),"SOWS","setTaskState",2);
+			} finally { 
+				eos.cleanup(c,s);
+			}
+		}
+		
+	}
 
 	/**
 	 * Update the SOW core.
@@ -118,8 +166,9 @@ public class SOWS {
 	 * @param starts
 	 * @param ends
 	 */
-	public void updateCore(String sowid, String title, String desc, String starts, String ends, String status) {
+	public void updateCore(String sowid, String title, String desc, String starts, String ends, String status, String milestones) {
 		if (eos.active()) {
+		
 			Connection c = eos.c();
 			Statement s = null;
 
@@ -128,26 +177,52 @@ public class SOWS {
 				s = c.createStatement();
 
 				int sid = eos.d(sowid);
+				
 				title = com.eos.Eos.clean(title);
 				desc = com.eos.Eos.clean(desc);
-				starts = com.eos.utils.Calendar.clean(starts);
-				ends = com.eos.utils.Calendar.clean(ends);
+				String startsClean = com.eos.utils.Calendar.clean(starts);
+				String endsClean = com.eos.utils.Calendar.clean(ends);
+				
+				
 				int iS = com.eos.utils.Strings.getIntFromString(status);
-
+				
 				s = c.createStatement();
 				s.addBatch("update rr_sow set title='" + title + "' where sowid=" + sid + "");
 				s.addBatch("update rr_sow set description='" + desc + "' where sowid=" + sid + "");
-				s.addBatch("update rr_sow set starts='" + starts + "' where sowid=" + sid + "");
-				s.addBatch("update rr_sow set ends='" + ends + "' where sowid=" + sid + "");
+				s.addBatch("update rr_sow set starts='" + startsClean + "' where sowid=" + sid + "");
+				s.addBatch("update rr_sow set ends='" + endsClean + "' where sowid=" + sid + "");
 				s.addBatch("update rr_sow set firstedit=1 where sowid=" + sid + "");
 				s.addBatch("update rr_sow set status=" + iS + " where sowid=" + sid + "");
 				s.executeBatch();
+				
+				
+				
 
 			} catch (Exception e) {
 				eos.log("Errors updating SOW core. Err:" + e.toString(), "SOWS", "updateCore", 2);
 			} finally {
 				eos.cleanup(c, s);
+				
+				if(com.eos.utils.Forms.getCheckboxState(milestones) == 1) { 
+					setSOWDateMilestones(sowid,starts,ends);
+				}
 			}
+		}
+	}
+	
+	/**
+	 * Sets milestones dates.
+	 * @param sowid
+	 * @param start
+	 * @param end
+	 */
+	private void setSOWDateMilestones(String sowid, String start, String end)
+	{
+		SOW sow = ventureSOW(sowid);
+		if(sow!=null)
+		{
+			String vid = eos.e(sow.ventureid());
+			rr.events().addSOWDateMilestones(vid, start, end);
 		}
 	}
 
@@ -198,5 +273,8 @@ public class SOWS {
 		}
 		return sow;
 	}
+	
+	
+	
 
 }
