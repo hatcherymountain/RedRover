@@ -138,13 +138,11 @@ public class Events {
 			Connection c = eos.c();
 			Statement  s = null;
 			try { 
-				
-				
 				//TODO Beef up security 
 				//TODO Audit
 				int id = eos.d(eventid);
 				s = c.createStatement();
-				String sql = "delete from rr_events where eventid=" + id + "";
+				String sql = "delete from rr_events where eventid=" + id + ""; 
 				s.execute(sql);
 				
 				

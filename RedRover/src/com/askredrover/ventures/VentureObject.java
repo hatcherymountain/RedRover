@@ -2,13 +2,13 @@ package com.askredrover.ventures;
 
 public class VentureObject implements Venture {
 
-	private int vid, eid, aid, cid, to, status, author, groupid = 0;
-	private String t, d = null;
+	private int vid, eid, aid, cid, to, status, author, groupid,progress,sentiment = 0;
+	private String t, d,color = null;
 	private java.sql.Date added = null;
 	private java.sql.Timestamp entered = null;
 
 	public VentureObject(int vid, int eid, int aid, int cid, String t, String d, int to, int status,
-			java.sql.Date added, java.sql.Timestamp entered, int author, int groupid) {
+			java.sql.Date added, java.sql.Timestamp entered, int author, int groupid, String color, int progress, int sentiment) {
 		this.vid = vid;
 		this.eid = eid;
 		this.aid = aid;
@@ -21,6 +21,9 @@ public class VentureObject implements Venture {
 		this.entered = entered;
 		this.author = author;
 		this.groupid = groupid;
+		this.color=color;
+		this.progress=progress;
+		this.sentiment=sentiment;
 	}
 
 	public int vid() {
@@ -78,4 +81,24 @@ public class VentureObject implements Venture {
 	public int groupid() {
 		return groupid;
 	}
+	
+	public String color() { 
+		if(color == null) { color = "red"; } 
+		return color; 
+	}
+	
+	public int progress() { 
+		return progress;
+	}
+	
+	public int sentiment() { 
+		return sentiment;
+	}
+	
+	public String sentimentAsString() 
+	{
+		return com.askredrover.Constants.sentimentAsString(sentiment);
+	}
+	
+	
 }

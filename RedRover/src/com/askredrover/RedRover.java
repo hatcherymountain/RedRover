@@ -5,6 +5,8 @@ import com.askredrover.utils.*;
 import com.askredrover.pinpoint.Messages;
 import com.askredrover.wisdom.*;
 import com.askredrover.ventures.*;
+import com.askredrover.communication.*;
+
 
 public class RedRover {
 
@@ -13,18 +15,30 @@ public class RedRover {
 	private Ventures ventures = null;
 	private Messages messages = null;
 	private Events events = null;
+	private Communications comms = null;
 
 	private boolean showWisdom = false;
 	private boolean showVentures = false;
 	private Wisdom wisdom = null;
 	private boolean admin = false;
+	private Users users = null;
 
 	public RedRover(Eos eos) {
 		this.eos = eos;
 		showWisdom = true;
 		showVentures = true;
 	}
-
+	
+	/**
+	 * User Communications Framework. Provides the backbone for how we communicate with customers and when.
+	 */
+	public Communications communication() { 
+		if(comms == null) { 
+			comms = new Communications(eos,this);
+		} 
+		return comms;
+	}
+	
 	/**
 	 * Get all ventures
 	 * 
@@ -56,6 +70,17 @@ public class RedRover {
 			loc = "wisdom/" + eid + "";
 		}
 		return loc;
+	}
+	
+	/**
+	 * Users services
+	 * @return
+	 */
+	public Users users() { 
+		if(users==null) { 
+			users = new Users(eos,this);
+		}
+		return users;
 	}
 
 	/**

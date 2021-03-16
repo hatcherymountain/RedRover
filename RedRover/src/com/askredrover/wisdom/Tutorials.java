@@ -89,7 +89,7 @@ public class Tutorials {
 				if(title.length() > 0)
 				{
 					
-					String sql = "insert into wisdom_tutorial_step values(" + id + "," + indx + ",'" + title + "','','',0)";
+					String sql = "insert into wisdom_tutorial_step values(null," + id + "," + indx + ",'" + title + "','','',0)";
 					s.execute(sql);
 					
 				}
@@ -105,6 +105,246 @@ public class Tutorials {
 		
 	}
 	
+	public void remove(String tutid)
+	{
+		if(eos.isAdmin())
+		{
+			Connection c = eos.c();
+			Statement  s = null;
+			try {
+				s = c.createStatement();
+				int id = eos.d(tutid);
+				String sql = "delete from wisdom_tutorial_step where tutid=" + id + "";
+				s.execute(sql);
+				
+				String sql2 = "delete from wisdom_tutorials where tutid=" + id + "";
+				s.execute(sql2);
+				
+			} catch(Exception e) { 
+				eos.log("Errors removing a tutorial. Err:" + e.toString(),"Tutorials","removeStep",2);
+			} finally { 
+				eos.cleanup(c, s);
+			}
+		}
+	}
+	
+	
+	
+	/**
+	 * Remove a step.
+	 * @param stepid
+	 */
+	public void removeStep(String stepid)
+	{
+		if(eos.isAdmin())
+		{
+			Connection c = eos.c();
+			Statement  s = null;
+			try {
+				s = c.createStatement();
+				int id = eos.d(stepid);
+				String sql = "delete from wisdom_tutorial_step where stepid=" + id + "";
+				s.execute(sql);
+				
+			} catch(Exception e) { 
+				eos.log("Errors removing a step. Err:" + e.toString(),"Tutorials","removeStep",2);
+			} finally { 
+				eos.cleanup(c, s);
+			}
+		}
+	}
+	
+	/**
+	 * Get a step
+	 * @param sid
+	 * @return Step.class
+	 */
+	public Step getStep(String sid) { 
+		Step step = null;
+		
+		Connection c = eos.c();
+		Statement  s = null;
+		ResultSet rs = null;
+		
+		try { 
+			
+			s = c.createStatement();
+			int id = eos.d(sid);
+			String sql = "select tutid,indx,title,description,url,fileid from wisdom_tutorial_step where stepid="+id+"";
+			rs = s.executeQuery(sql);
+			while(rs.next())
+			{	
+				
+				int t = rs.getInt(1);
+				int i = rs.getInt(2);
+				String ti = rs.getString(3);
+				String d = rs.getString(4);
+				String u = rs.getString(5);
+				int fi = rs.getInt(6);
+				
+				step = new Step(id,t,i,ti,d,u,fi);
+				
+			}
+			
+		} catch(Exception e) { 
+			eos.log("Errors getting a specific step object. Err;" + e.toString(),"Tutorials","getStep",2);
+		} finally { 
+			eos.cleanup(c,s,rs);
+		}
+		
+		return step;
+	}
+	
+	/**
+	 * Updates tutorial
+	 * @param r
+	 */
+	public void update(javax.servlet.http.HttpServletRequest r)  
+	{
+		if(eos.isAdmin())
+		{
+			Connection c = eos.c();
+			Statement  s = null;
+			try {
+				
+				s =c.createStatement();
+				int id = eos.d(r.getParameter("tid"));
+
+				String status = r.getParameter("status");
+				int iStatus = com.eos.utils.Strings.getIntFromString(status);
+				
+				String role = r.getParameter("role"); int iRole = eos.d(role);
+				
+				String storeid = r.getParameter("storeid"); int sid = eos.d(storeid);
+				
+				String title = r.getParameter("title"); title = com.eos.Eos.clean(title);
+				
+				String desc  = r.getParameter("desc"); desc = com.eos.Eos.clean(desc);
+				
+				String category = r.getParameter("categoryid"); int iCat = eos.d(category);
+				
+				s.addBatch("update wisdom_tutorials set status="+ iStatus + " where tutid=" + id + "");
+				s.addBatch("update wisdom_tutorials set categoryid="+ iCat + " where tutid=" + id + "");
+				s.addBatch("update wisdom_tutorials set roleid="+ iRole + " where tutid=" + id + "");
+				s.addBatch("update wisdom_tutorials set storeid="+ sid + " where tutid=" + id + "");
+				s.addBatch("update wisdom_tutorials set title='"+ title + "' where tutid=" + id + "");
+				s.addBatch("update wisdom_tutorials set description='"+ desc + "' where tutid=" + id + "");
+			
+				s.executeBatch();
+		
+				
+			} catch(Exception e)
+			{
+				eos.log("Errors updating tutorial metadata. Err:" + e.toString(),"Step","updateStepFile",2);
+			} finally { 
+				eos.cleanup(c,s);
+			}
+		}
+	}
+	
+	
+	
+	/**
+	 * Update Step to include file.
+	 * @param sid
+	 * @param fileid
+	 */
+	public void updateStepFile(String sid, String fileid)
+	{
+		if(eos.isAdmin())
+		{
+			Connection c = eos.c();
+			Statement  s = null;
+			try {
+				
+				s =c.createStatement();
+				int id = eos.d(sid);
+				int fid = eos.d(fileid);
+				
+				s.execute("update wisdom_tutorial_step set fileid=" + fid + " where stepid=" + id + "");
+				
+			} catch(Exception e)
+			{
+				eos.log("Errors updating step file. Err:" + e.toString(),"Step","updateStepFile",2);
+			} finally { 
+				eos.cleanup(c,s);
+			}
+		}
+	}
+	
+	/**
+	 * Remove Step File.
+	 * @param sid
+	 */
+	public void removeFile(String sid)
+	{
+		if(eos.isAdmin())
+		{
+			Connection c = eos.c();
+			Statement  s = null;
+			try {
+				
+				s =c.createStatement();
+				int id = eos.d(sid);
+				
+				s.execute("update wisdom_tutorial_step set fileid=0 where stepid=" + id + "");
+				
+			} catch(Exception e)
+			{
+				eos.log("Errors updating step file. Err:" + e.toString(),"Step","updateStepFile",2);
+			} finally { 
+				eos.cleanup(c,s);
+			}
+		}
+	}
+	
+	
+	
+	
+	
+	/**
+	 * Updates the basic text attributes of a step.
+	 * @param sid
+	 * @param title
+	 * @param description
+	 * @param url
+	 * @param index
+	 */
+	public void updateStepContent(String sid, String title, String description, String url, String index)
+	{
+		if(eos.isAdmin())
+		{
+			Connection c = eos.c();
+			Statement  s = null;
+			try {
+				
+				s =c.createStatement();
+				int id = eos.d(sid);
+				
+				title = com.eos.Eos.clean(title);
+				if(title.length() > 0)  { 
+					s.addBatch("update wisdom_tutorial_step set title='" + title + "' where stepid="+id +"");
+				}
+				
+				description = com.eos.Eos.clean(description);
+				s.addBatch("update wisdom_tutorial_step set description='" + description + "' where stepid="+id +"");
+				
+				url = com.eos.Eos.clean(url);
+				s.addBatch("update wisdom_tutorial_step set url='" + url + "' where stepid="+id +"");
+				
+				int iIndex = com.eos.utils.Strings.getIntFromString(index);
+				s.addBatch("update wisdom_tutorial_step set indx=" + iIndex + " where stepid="+id +"");
+				
+				s.executeBatch();
+				
+			} catch(Exception e)
+			{
+				eos.log("Errors updating step content. Err:" + e.toString(),"Step","updateStepContent",2);
+			} finally { 
+				eos.cleanup(c,s);
+			}
+		}
+	}
 	
 	/**
 	 * Get steps in tutorial
@@ -122,18 +362,19 @@ public class Tutorials {
 			
 			s = c.createStatement();
 			int id = eos.d(tid);
-			String sql = "select tutid,indx,title,description,url,fileid from wisdom_tutorial_step where tutid="+id+" order by indx asc";
+			String sql = "select stepid,tutid,indx,title,description,url,fileid from wisdom_tutorial_step where tutid="+id+" order by indx asc";
 			rs = s.executeQuery(sql);
 			while(rs.next())
-			{
-				int t = rs.getInt(1);
-				int i = rs.getInt(2);
-				String ti = rs.getString(3);
-				String d = rs.getString(4);
-				String u = rs.getString(5);
-				int fi = rs.getInt(6);
+			{	
+				int sid = rs.getInt(1);
+				int t = rs.getInt(2);
+				int i = rs.getInt(3);
+				String ti = rs.getString(4);
+				String d = rs.getString(5);
+				String u = rs.getString(6);
+				int fi = rs.getInt(7);
 				
-				lst.add(new Step(t,i,ti,d,u,fi));
+				lst.add(new Step(sid,t,i,ti,d,u,fi));
 				
 			}
 			
@@ -145,7 +386,63 @@ public class Tutorials {
 		
 		return lst;
 	}
+	
+	
+	public ArrayList<Tutorial> getTutorialsForUser(String categoryid) { 
+		return getTutorialsForUser(eos.d(categoryid));
+	}
+	
+	private ArrayList<Tutorial> getTutorialsForUser(int cid) { 
+		
+		ArrayList<Tutorial> lst = new ArrayList<Tutorial>();
 
+		Connection c = eos.c();
+		Statement s = null;
+		ResultSet rs = null;
+		try {
+			
+			int eid = eos.account().eid();
+			
+			s = c.createStatement();
+			String sql = "select tutid,accountid,storeid,title,description,added,status,roleid from wisdom_tutorials where eid="
+					+ eid + " and categoryid=" + cid + " and status=2 order by added desc";
+
+			rs = s.executeQuery(sql);
+			while (rs.next()) {
+				
+				int tid = rs.getInt(1);
+				int aid = rs.getInt(2);
+				int sid = rs.getInt(3);
+				String t = rs.getString(4);
+				String d = rs.getString(5);
+				java.sql.Date added = rs.getDate(6);
+				int status = rs.getInt(7);
+				int role = rs.getInt(8);
+				
+				
+				Tutorial tut = new TutorialObject(tid, eid, aid, sid,t,d, cid, added, status,role);
+				
+				if(sid>0) { 
+					
+					if(rr.wisdom().search().isInStore(sid)) {
+						lst.add(tut);
+					}
+					
+				} else { 
+					lst.add(tut);
+				}
+			}
+
+		} catch (Exception e) {
+			eos.log("Errors getting ALL tutorials for user. Err;" + e.toString(), "Articles", "getArticlesForUser", 2);
+		} finally {
+			eos.cleanup(c, s, rs);
+		}
+
+		return lst;
+		
+		
+	}
 	/**
 	 * Gets a specific tutorial
 	 * 

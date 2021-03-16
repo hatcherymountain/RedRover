@@ -5,13 +5,11 @@ import com.eos.accounts.User;
 
 public class Constants {
 
-	
 	public static final int ID_FILE = 0;
 	public static final int ID_ARTICLE = 1;
 	public static final int ID_TUTORIAL = 2;
-	
-	public static final int RECENT_PARAMETER = 14;
 
+	public static final int RECENT_PARAMETER = 14;
 	public static final String TESTFLOW_KEYPHRASE = "test";
 
 	public static final String[] VENTURE_ROLES = { "User", "Editor", "Administrator" };
@@ -21,6 +19,7 @@ public class Constants {
 	public static final int ROLE_OWNER = 2;
 
 	public static final String[] VENTURE_STATES = { "Developing", "Active", "Paused", "Archived" };
+	public static final int VENTURE_STATE_ARCHIVED = 3;
 	public static final String[] VENTURE_STATE_COLORS = { "warning", "success", "info", "danger" };
 
 	public static final String[] EVENT_STATES = { "Inactive", "Active", "Completed" };
@@ -34,7 +33,7 @@ public class Constants {
 
 	public static final String[] ARTICLE_STATES = { "Editing", "Review", "Live", "Archived" };
 	public static final String[] ARTICLE_STATE_COLORS = { "warning", "info", "success", "danger" };
-	
+
 	public static final String[] TUTORIAL_STATES = { "Editing", "Review", "Live", "Archived" };
 	public static final String[] TUTORIAL_STATE_COLORS = { "warning", "info", "success", "danger" };
 
@@ -43,14 +42,41 @@ public class Constants {
 
 	public static final String[] ACTIVITY_PRIORITIES = { "General", "Important" };
 
-	public static final String[] BOOKMARK_TYPES = {"File","Article","Tutorial"};
+	public static final String[] BOOKMARK_TYPES = { "File", "Article", "Tutorial" };
 	public static final int BOOKMARK_FILE = 0;
 	public static final int BOOKMARK_ARTICLE = 1;
 	public static final int BOOKMARK_TUTORIAL = 2;
-	
-	
-	
-	
+
+	public static final String[] colors = { "charcoal", "crimson", "maroon", "stone", "tangerine", "red", "hatchery",
+			"blue" };
+
+	public static final String[] VENTURE_SENTIMENTS = { "Fantastic", "Great", "Good", "Average", "Could be better",
+			"Not good", "Awful" };
+	public static final int VENTURE_SENTIMENT_GOOD = 2;
+
+	/**
+	 * What is the current venture sentiment.
+	 * 
+	 * @param current
+	 * @return
+	 */
+	public static String sentimentAsString(int current) {
+		String sentiment = null;
+
+		for (int i = 0; i < VENTURE_SENTIMENTS.length; i++) {
+			String s = (String) VENTURE_SENTIMENTS[i];
+			if (i == current) {
+				sentiment = s;
+			}
+		}
+
+		if (sentiment == null) {
+			sentiment = (String) VENTURE_SENTIMENTS[3];
+		}
+
+		return sentiment;
+	}
+
 	/**
 	 * Get the venture roles as a selection list.
 	 * 
@@ -127,7 +153,7 @@ public class Constants {
 		}
 		return s;
 	}
-	
+
 	public static String tutorialStatusAsString(int status) {
 		String s = null;
 		try {
@@ -137,7 +163,6 @@ public class Constants {
 		}
 		return s;
 	}
-	
 
 	/**
 	 * Article states as an HTML Selection list.
@@ -159,8 +184,7 @@ public class Constants {
 
 		return sb.toString();
 	}
-	
-	
+
 	public static String tutorialStatesAsSelection(int current) {
 		StringBuffer sb = new StringBuffer();
 
@@ -186,7 +210,6 @@ public class Constants {
 		return s;
 	}
 
-	
 	public static String tutorialStatusColorAsString(int status) {
 		String s = null;
 		try {
