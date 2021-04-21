@@ -3,13 +3,13 @@ package com.askredrover.wisdom;
 public class ArticleObject implements Article {
 
 	private int articleid, accountid, storeid, author, essential, headerimg, status, roleid, categoryid = 0;
-	private String title, description, tags = null;
+	private String title, description, tags, youtube = null;
 	private java.sql.Date added = null;
 	private java.sql.Timestamp entered = null;
 
 	public ArticleObject(int articleid, int accountid, int storeid, String title, String description,
 			java.sql.Date added, java.sql.Timestamp entered, int author, int essential, String tags, int headerimg,
-			int status, int roleid, int categoryid) {
+			int status, int roleid, int categoryid, String youtube) {
 		this.articleid = articleid;
 		this.accountid = accountid;
 		this.storeid = storeid;
@@ -24,14 +24,19 @@ public class ArticleObject implements Article {
 		this.status = status;
 		this.roleid = roleid;
 		this.categoryid = categoryid;
+		this.youtube = youtube;
 	}
-	
-	public boolean live() { 
-		if(status==2) { 
+
+	public boolean live() {
+		if (status == 2) {
 			return true;
-		} else { 
+		} else {
 			return false;
 		}
+	}
+
+	public String youtube() {
+		return youtube;
 	}
 
 	public int articleid() {

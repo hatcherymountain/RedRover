@@ -379,4 +379,91 @@ public class Constants {
 		return newlst;
 	}
 
+	/**
+	 * Get Support Type
+	 * 
+	 * @param id
+	 * @return
+	 */
+	public static com.askredrover.support.SupportType getSupportType(int id) {
+		com.askredrover.support.SupportType s = null;
+		ArrayList<com.askredrover.support.SupportType> types = loadSupportTypes();
+		int size = types.size();
+
+		for (int i = 0; i < size; i++) {
+			com.askredrover.support.SupportType st = (com.askredrover.support.SupportType) types.get(i);
+			if (st.id() == id) {
+				s = st;
+				break;
+			}
+		}
+
+		return s;
+	}
+
+	/**
+	 * Gets the support type as a String value
+	 * 
+	 * @param id
+	 * @return
+	 */
+	public static String getSupportTypeAsString(int id) {
+		String s = null;
+		ArrayList<com.askredrover.support.SupportType> types = loadSupportTypes();
+		int size = types.size();
+
+		for (int i = 0; i < size; i++) {
+			com.askredrover.support.SupportType st = (com.askredrover.support.SupportType) types.get(i);
+			if (st.id() == id) {
+				s = st.value();
+			}
+		}
+
+		return s;
+	}
+
+	private static ArrayList<com.askredrover.support.SupportType> loadSupportTypes() {
+		ArrayList<com.askredrover.support.SupportType> lst = new ArrayList<com.askredrover.support.SupportType>();
+
+		lst.add(new com.askredrover.support.SupportType(1, "Add Something New", 0));
+		lst.add(new com.askredrover.support.SupportType(2, "Bug", 0));
+		lst.add(new com.askredrover.support.SupportType(3, "Cannot Find Something", 0));
+		lst.add(new com.askredrover.support.SupportType(4, "Password Problems", 0));
+		lst.add(new com.askredrover.support.SupportType(5, "UI/UX Problem", 0));
+
+		// Feedback Start ID at 50
+
+		lst.add(new com.askredrover.support.SupportType(51, "Improvement Needed", 1));
+		lst.add(new com.askredrover.support.SupportType(52, "Performance", 1));
+		lst.add(new com.askredrover.support.SupportType(53, "Requesting New Feature", 1));
+		lst.add(new com.askredrover.support.SupportType(54, "UI/UX", 1));
+
+		return lst;
+	}
+
+	/**
+	 * Typeof indicates whether support or feedback. This will be changed in the
+	 * future to be out of the JSON MetaInf files. (properties.json)
+	 * 
+	 * @param typeof int - 0= support and 1 = feedback
+	 * @return ArrayList of SupportType.class
+	 */
+	public static ArrayList<com.askredrover.support.SupportType> supportTypes(int typeof) {
+
+		// Todo put this in properties.json @ some point.
+		ArrayList<com.askredrover.support.SupportType> lst = new ArrayList<com.askredrover.support.SupportType>();
+
+		ArrayList<com.askredrover.support.SupportType> types = loadSupportTypes();
+		int size = types.size();
+
+		for (int i = 0; i < size; i++) {
+			com.askredrover.support.SupportType st = (com.askredrover.support.SupportType) types.get(i);
+			if (st.typeof() == typeof) {
+				lst.add(st);
+			}
+		}
+
+		return lst;
+	}
+
 }

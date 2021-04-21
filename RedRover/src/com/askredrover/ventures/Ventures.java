@@ -6,7 +6,6 @@ import java.sql.*;
 import java.util.*;
 import com.eos.accounts.User;
 
-
 public class Ventures {
 
 	private SOWS sows = null;
@@ -20,83 +19,90 @@ public class Ventures {
 		this.rr = rr;
 		loadTypes();
 	}
-	
-	public ArrayList<Type> ventureTypes() { return types; } 
-	
-	public String ventureTypeAsString(String tid) { 
+
+	public ArrayList<Type> ventureTypes() {
+		return types;
+	}
+
+	public String ventureTypeAsString(String tid) {
 		String vt = null;
 		Type _t = ventureType(tid);
-		if(_t!=null) { 
-			vt=_t.name();
-		} else { 
-			vt = "Undefined"; 
+		if (_t != null) {
+			vt = _t.name();
+		} else {
+			vt = "Undefined";
 		}
 		return vt;
 	}
+
 	/**
 	 * Get a specific Type
+	 * 
 	 * @param tid
 	 * @return
 	 */
-	public Type ventureType(String tid)
-	{
+	public Type ventureType(String tid) {
 		Type t = null;
 		int id = com.eos.utils.Strings.getIntFromString(tid);
 		int size = types.size();
-		for(int i = 0; i < size; i++) { 
-			Type _type = (Type)types.get(i);
-			if(_type.typeid()==id) { 
-				t = _type;break;
+		for (int i = 0; i < size; i++) {
+			Type _type = (Type) types.get(i);
+			if (_type.typeid() == id) {
+				t = _type;
+				break;
 			}
 		}
 		return t;
 	}
+
 	/**
 	 * Get Ventures types as an HTML select list.
+	 * 
 	 * @return
 	 */
-	public String ventureTypesAsSelectList() { 
+	public String ventureTypesAsSelectList() {
 		StringBuffer sb = new StringBuffer();
-		if(eos.active())
-		{
+		if (eos.active()) {
 			int size = types.size();
-			for(int i = 0; i < size; i++) {
-				Type t = (Type)types.get(i);
-				
-				if(t.name().equalsIgnoreCase("New Product")) { 
-					sb.append("<option selected value=" + i + ">" + t.name() +"</option>");
-				} else { 
-					sb.append("<option value=" + i + ">" + t.name() +"</option>");
+			for (int i = 0; i < size; i++) {
+				Type t = (Type) types.get(i);
+
+				if (t.name().equalsIgnoreCase("New Product")) {
+					sb.append("<option selected value=" + i + ">" + t.name() + "</option>");
+				} else {
+					sb.append("<option value=" + i + ">" + t.name() + "</option>");
 				}
 			}
 		}
-		return sb.toString();				
+		return sb.toString();
 	}
-	
+
 	/**
 	 * Defines the types of projects we provide in Ventures.
 	 */
-	private void loadTypes() { 
-		if(eos.active()) { 
+	private void loadTypes() {
+		if (eos.active()) {
 			types = new ArrayList<Type>();
-			Connection c = eos.c();Statement s = null;
+			Connection c = eos.c();
+			Statement s = null;
 			ResultSet rs = null;
-			try { 
+			try {
 				s = c.createStatement();
 				rs = s.executeQuery("select typeid,name,description from rr_venture_types order by name asc");
-				while(rs.next())
-				{
+				while (rs.next()) {
 					int t = rs.getInt(1);
 					String n = rs.getString(2);
-					String d = rs.getString(3); if(d==null) { d = ""; }
-					types.add(new Type(t,n,d));
+					String d = rs.getString(3);
+					if (d == null) {
+						d = "";
+					}
+					types.add(new Type(t, n, d));
 				}
-				
-			} catch(Exception e)
-			{
-				eos.log("Errors getting venture types. Err:" + e.toString(),"Ventures","loadTypes",2);
-			} finally { 
-				eos.cleanup(c,s,rs);
+
+			} catch (Exception e) {
+				eos.log("Errors getting venture types. Err:" + e.toString(), "Ventures", "loadTypes", 2);
+			} finally {
+				eos.cleanup(c, s, rs);
 			}
 		}
 	}
@@ -122,12 +128,12 @@ public class Ventures {
 	/**
 	 * Loads the list of groups
 	 */
-	public  ArrayList<Group> groups() {
-		
+	public ArrayList<Group> groups() {
+
 		ArrayList<Group> groups = new ArrayList<Group>();
-		
+
 		if (eos.active()) {
-			
+
 			Connection c = eos.c();
 			Statement s = null;
 			ResultSet rs = null;
@@ -363,56 +369,54 @@ public class Ventures {
 			notifyNewMembers(vid, notifylist);
 		}
 	}
-	
+
 	/**
 	 * Get Ventures for a particular user.
+	 * 
 	 * @param userid
 	 * @return
 	 */
-	public ArrayList<Venture> getVentures(String userid)
-	{
+	public ArrayList<Venture> getVentures(String userid) {
 		ArrayList<Venture> lst = new ArrayList<Venture>();
-		
+
 		Connection c = eos.c();
-		Statement  s = null;
+		Statement s = null;
 		ResultSet rs = null;
-		
-		try { 
-			
+
+		try {
+
 			s = c.createStatement();
 			int uid = eos.d(userid);
 			int eid = eos.account().eid();
 			String sql = "select distinct vid from rr_venture_members where eid=" + eid + " and userid=" + uid + "";
 			rs = s.executeQuery(sql);
-			while(rs.next())
-			{
+			while (rs.next()) {
 				int id = rs.getInt(1);
 				Venture v = this.getVenture(id);
-				if(v!=null) { 
+				if (v != null) {
 					lst.add(v);
 				}
 			}
-			
-		} catch(Exception e)
-		{
-			eos.log("Errors getting ventures for a user. Err:" + e.toString(),"Ventures","getVentures[uid]",2);
-		} finally  { 
-			eos.cleanup(c,s,rs);
+
+		} catch (Exception e) {
+			eos.log("Errors getting ventures for a user. Err:" + e.toString(), "Ventures", "getVentures[uid]", 2);
+		} finally {
+			eos.cleanup(c, s, rs);
 		}
-		
+
 		return lst;
 	}
-	
+
 	/**
 	 * Get a venture using a venture identifier (enc)
+	 * 
 	 * @param ventureid
 	 * @return Venture.class
 	 */
-	public Venture getVenture(String ventureid)
-	{
+	public Venture getVenture(String ventureid) {
 		return getVenture(eos.d(ventureid));
 	}
-	
+
 	/**
 	 * Get Ventures
 	 * 
@@ -457,7 +461,7 @@ public class Ventures {
 					int pro = rs.getInt(14);
 					int sen = rs.getInt(15);
 
-					venture = new VentureObject(v, e, a, _c, t, d, to, st, ad, en, au, groupid,color,pro,sen);
+					venture = new VentureObject(v, e, a, _c, t, d, to, st, ad, en, au, groupid, color, pro, sen);
 
 				}
 
@@ -518,7 +522,8 @@ public class Ventures {
 					int pro = rs.getInt(14);
 					int sen = rs.getInt(15);
 
-					VentureObject ven = new VentureObject(v, e, a, _c, t, d, to, st, ad, en, au, groupid, color,pro,sen);
+					VentureObject ven = new VentureObject(v, e, a, _c, t, d, to, st, ad, en, au, groupid, color, pro,
+							sen);
 
 					lst.add(ven);
 
@@ -533,60 +538,59 @@ public class Ventures {
 		}
 		return lst;
 	}
-	
+
 	/**
 	 * Find Ventures linked to a group.
+	 * 
 	 * @param groupid
-	 * @param notArchived ... if true, does NOT show archived Ventures in the resultset
+	 * @param notArchived ... if true, does NOT show archived Ventures in the
+	 *                    resultset
 	 * @return ArrayList of Venture.class
 	 */
-	public ArrayList<Venture> groupVentures(String groupid, boolean notArchived)
-	{
+	public ArrayList<Venture> groupVentures(String groupid, boolean notArchived) {
 		ArrayList<Venture> lst = new ArrayList<Venture>();
-		
-		if(eos.active())
-		{
-			
+
+		if (eos.active()) {
+
 			Connection c = eos.c();
-			Statement  s = null;
+			Statement s = null;
 			ResultSet rs = null;
 			int gid = eos.d(groupid);
-			
-			try { 
-				
+
+			try {
+
 				int eid = eos.account().eid();
 				s = c.createStatement();
 				String sql = "select vid from rr_venture where eid=" + eid + " and groupid=" + gid + "";
-				if(notArchived) { 
-					sql = sql +" and status < " + com.askredrover.Constants.VENTURE_STATE_ARCHIVED + "";
+				if (notArchived) {
+					sql = sql + " and status < " + com.askredrover.Constants.VENTURE_STATE_ARCHIVED + "";
 				}
-				
+
 				sql = sql + " order by title asc";
-				
-				//eos.log(sql);
-				
+
+				// eos.log(sql);
+
 				rs = s.executeQuery(sql);
-				while(rs.next())
-				{
-					int v = rs.getInt(1);String vid = eos.e(v);
+				while (rs.next()) {
+					int v = rs.getInt(1);
+					String vid = eos.e(v);
 					Venture venture = this.getVenture(vid);
-					if(venture!=null) { 
+					if (venture != null) {
 						lst.add(venture);
 					}
 				}
-				
-			} catch(Exception e) {
-				eos.log("Errors getting ventures linked to group. Err;" + e.toString(),"Ventures","groupVentures",2);
-			} finally { 
-				eos.cleanup(c, s,rs);
+
+			} catch (Exception e) {
+				eos.log("Errors getting ventures linked to group. Err;" + e.toString(), "Ventures", "groupVentures", 2);
+			} finally {
+				eos.cleanup(c, s, rs);
 			}
-			
-			
+
 		}
-		
+
 		return lst;
 	}
-	
+
 	/**
 	 * Get the group selection as a HTML selection list
 	 * 
@@ -651,45 +655,48 @@ public class Ventures {
 		String notset = com.eos.utils.Calendar.NO_EXPIRE_DATE;
 
 	}
-	
+
 	/**
 	 * Check if the group exists.
+	 * 
 	 * @param title
 	 * @return boolean
 	 */
-	private boolean groupExists(String title)
-	{
+	private boolean groupExists(String title) {
 		boolean exists = false;
-		ArrayList<Group> lst = groups(); int size = lst.size();
-		for(int i = 0; i < size; i++) { 
-			Group g = (Group)lst.get(i);
-			if(g.name().equalsIgnoreCase(title)) { 
-				exists = true; break;
+		ArrayList<Group> lst = groups();
+		int size = lst.size();
+		for (int i = 0; i < size; i++) {
+			Group g = (Group) lst.get(i);
+			if (g.name().equalsIgnoreCase(title)) {
+				exists = true;
+				break;
 			}
 		}
 		return exists;
 	}
-	
-	
+
 	/**
 	 * Adds a new group
+	 * 
 	 * @param HttpServletRequest
 	 */
-	public void addGroup(javax.servlet.http.HttpServletRequest r)
-	{
-		if(eos.isAdmin()) { 
-			
+	public void addGroup(javax.servlet.http.HttpServletRequest r) {
+		if (eos.isAdmin()) {
+
 			Connection c = eos.c();
 			Statement s = null;
 			try {
 
 				int eid = eos.account().eid();
-				String t = r.getParameter("title"); t = com.eos.Eos.clean(t).trim();
-				String d = r.getParameter("description"); d = com.eos.Eos.clean(d);
-				
-				if(t.length() > 0 && (!groupExists(t))) { 
+				String t = r.getParameter("title");
+				t = com.eos.Eos.clean(t).trim();
+				String d = r.getParameter("description");
+				d = com.eos.Eos.clean(d);
+
+				if (t.length() > 0 && (!groupExists(t))) {
 					s = c.createStatement();
-					String sql = "insert into rr_venture_groups values(null,"+eid+",'" + t + "','" + d + "')";
+					String sql = "insert into rr_venture_groups values(null," + eid + ",'" + t + "','" + d + "')";
 					s.execute(sql);
 				}
 
@@ -698,9 +705,10 @@ public class Ventures {
 			} finally {
 				eos.cleanup(c, s);
 			}
-			
+
 		}
 	}
+
 	/**
 	 * Adds default Event!
 	 * 
@@ -744,7 +752,7 @@ public class Ventures {
 		ResultSet rs = null;
 		String title = "";
 		String desc = "";
-		
+
 		try {
 
 			int eid = eos.account().eid();
@@ -752,16 +760,19 @@ public class Ventures {
 			String today = com.eos.utils.Calendar.getTodayForSQL();
 			int iGroup = eos.d(r.getParameter("groupid"));
 
-			String sql = "insert into rr_venture values(null,?,?,?,?,?,?,?,'" + today + "',null,?,?,?,0,?)";
+			String sql = "insert into rr_venture values(null,?,?,?,?,?,?,?,'" + today + "',NOW(),?,?,?,0,?)";
 
 			p = c.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
 			title = com.eos.Eos.clean(r.getParameter("title"));
 			desc = com.eos.Eos.clean(r.getParameter("vinfo"));
 			String color = com.eos.Eos.clean(r.getParameter("color"));
-			String _type = r.getParameter("vtype"); int iType = com.eos.utils.Strings.getIntFromString(_type);
+			String _type = r.getParameter("vtype");
+			int iType = com.eos.utils.Strings.getIntFromString(_type);
 
-			if(title.length() ==0) { title = "Venture - " + today + ""; } 
-			
+			if (title.length() == 0) {
+				title = "Venture - " + today + "";
+			}
+
 			p.setInt(1, eid);
 			p.setInt(2, aid);
 			p.setInt(3, eos.d(r.getParameter("cid")));
@@ -772,8 +783,9 @@ public class Ventures {
 			p.setInt(8, eos.user().getUserId());
 			p.setInt(9, iGroup);
 			p.setString(10, color);
-			p.setInt(11,com.askredrover.Constants.VENTURE_SENTIMENT_GOOD); //Most projects start of with a good sentiment...
-			
+			p.setInt(11, com.askredrover.Constants.VENTURE_SENTIMENT_GOOD); // Most projects start of with a good
+																			// sentiment...
+
 			p.executeUpdate();
 			rs = p.getGeneratedKeys();
 

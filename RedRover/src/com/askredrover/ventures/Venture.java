@@ -29,13 +29,13 @@ public interface Venture {
 	public String statusAsString();
 
 	public String statusColorAsString();
-	
+
 	public String color();
-	
+
 	public int progress();
-	
-	public int  sentiment();
-	
+
+	public int sentiment();
+
 	public String sentimentAsString();
-	
+
 }

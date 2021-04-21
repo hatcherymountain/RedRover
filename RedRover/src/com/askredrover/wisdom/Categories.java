@@ -45,10 +45,6 @@ public class Categories {
 			Statement s = null;
 
 			try {
-
-				eos.log(name);
-				eos.log(desc);
-
 				if (name.length() > 0) {
 
 					int eid = eos.account().eid();
@@ -59,7 +55,7 @@ public class Categories {
 
 					String sql = "insert into wisdom_categories values(null," + eid + ",'" + name + "','" + desc + "',"
 							+ id + "," + siblingid + ")";
-					eos.log(sql);
+
 					s.execute(sql);
 
 				}
@@ -73,6 +69,50 @@ public class Categories {
 		} else {
 			System.out.println("not an admin");
 
+		}
+	}
+
+	public void updateDescription(String catid, String value) {
+		if (eos.isAdmin()) {
+			Connection c = eos.c();
+			Statement s = null;
+			try {
+
+				s = c.createStatement();
+				int id = eos.d(catid);
+				value = com.eos.Eos.clean(value);
+
+				String sql = "update wisdom_categories set description='" + value + "' where catid=" + id + "";
+				s.execute(sql);
+
+			} catch (Exception e) {
+				eos.log("Errors updating title. Err:" + e.toString(), "Categories", "updateTitle", 2);
+			} finally {
+				eos.cleanup(c, s);
+				reset();
+			}
+		}
+	}
+
+	public void updateTitle(String catid, String value) {
+		if (eos.isAdmin()) {
+			Connection c = eos.c();
+			Statement s = null;
+			try {
+
+				s = c.createStatement();
+				int id = eos.d(catid);
+				value = com.eos.Eos.clean(value);
+
+				String sql = "update wisdom_categories set category='" + value + "' where catid=" + id + "";
+				s.execute(sql);
+
+			} catch (Exception e) {
+				eos.log("Errors updating title. Err:" + e.toString(), "Categories", "updateTitle", 2);
+			} finally {
+				eos.cleanup(c, s);
+				reset();
+			}
 		}
 	}
 
@@ -103,6 +143,93 @@ public class Categories {
 
 			} catch (Exception e) {
 				eos.log("Errors counting category files. Err:" + e.toString(), "Categories", "countFiles", 2);
+			} finally {
+				eos.cleanup(c, s, rs);
+			}
+
+		}
+
+		return count;
+	}
+
+	public boolean canDelete(String catid) {
+		boolean can = false;
+
+		if (eos.isAdmin()) {
+			int ct = countTutorials(catid);
+			int ca = countArticles(catid);
+			int cf = countFiles(catid);
+			int t = ct + ca + cf;
+			if (t == 0) {
+				can = true;
+			}
+		}
+
+		return can;
+	}
+	
+	/**
+	 * Total number of items
+	 * @param catid
+	 * @return
+	 */
+	public int totalItems(String catid) {
+		int t = 0;
+
+		if (eos.isAdmin()) {
+			int ct = countTutorials(catid);
+			int ca = countArticles(catid);
+			int cf = countFiles(catid);
+			t = ct + ca + cf;
+			
+		}
+
+		return t;
+	}
+
+	public void remove(String catid) {
+		if (canDelete(catid)) {
+			if (eos.isAdmin()) {
+				Connection c = eos.c();
+				Statement s = null;
+				try {
+					s = c.createStatement();
+					int id = eos.d(catid);
+					String sql = "delete from wisdom_categories where catid=" + id + "";
+					s.execute(sql);
+
+				} catch (Exception e) {
+					eos.log("Errors removing a category. Err;" + e.toString(), "Categories", "remove", 2);
+				} finally {
+					eos.cleanup(c, s);
+					reset();
+				}
+
+			}
+		}
+	}
+
+	public int countTutorials(String catid) {
+		int count = 0;
+
+		if (eos.active()) {
+
+			Connection c = eos.c();
+			Statement s = null;
+			ResultSet rs = null;
+
+			try {
+
+				s = c.createStatement();
+				int cid = eos.d(catid);
+				String sql = "select count(*) from wisdom_tutorials where categoryid=" + cid + "";
+				rs = s.executeQuery(sql);
+				while (rs.next()) {
+					count = rs.getInt(1);
+				}
+
+			} catch (Exception e) {
+				eos.log("Errors counting category tutorials. Err:" + e.toString(), "Categories", "countTutorials", 2);
 			} finally {
 				eos.cleanup(c, s, rs);
 			}

@@ -65,6 +65,9 @@ public class Section {
 		case 6:
 			t = "YouTube or Vimeo Video";
 			break;
+		case 7:
+			t = "One or more files";
+			break;
 		}
 
 		return t;

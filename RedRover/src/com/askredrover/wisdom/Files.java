@@ -1,6 +1,7 @@
 package com.askredrover.wisdom;
 
 import com.eos.Eos;
+import com.askredrover.RedRover;
 import com.eos.files.File;
 import java.sql.*;
 import java.util.ArrayList;
@@ -8,9 +9,11 @@ import java.util.ArrayList;
 public class Files {
 
 	private Eos eos = null;
-
-	public Files(Eos eos) {
+	private RedRover rr = null;
+	
+	public Files(Eos eos, RedRover rr) {
 		this.eos = eos;
+		this.rr = rr;
 	}
 
 	/**
@@ -105,6 +108,8 @@ public class Files {
 					int iStatus = com.eos.utils.Strings.getIntFromString(status);
 					String roleid = r.getParameter("roleid");
 					int rid = eos.d(roleid);
+					String yt = r.getParameter("youtube");
+					yt = com.eos.Eos.clean(yt);
 
 					/** updates in batch form **/
 					s.addBatch("update eos_files set companyid=" + sid + " where fileid=" + id + "");
@@ -114,6 +119,7 @@ public class Files {
 					s.addBatch("update eos_files set tag='" + tag + "' where fileid=" + id + "");
 					s.addBatch("update eos_files set status=" + iStatus + " where fileid=" + id + "");
 					s.addBatch("update eos_files set roleid=" + rid + " where fileid=" + id + "");
+					s.addBatch("update eos_files set youtube='" + yt + "' where fileid=" + id + "");
 
 					/** Do the update **/
 					s.executeBatch();
@@ -219,46 +225,152 @@ public class Files {
 
 		return is;
 	}
-
+	
+	public ArrayList<com.eos.files.File> fileForUsers(String category) {
+		return fileForUsers(category,"0");
+	}
 	/**
 	 * Get files for a category.
+	 * 
 	 * @param category
 	 * @return ArrayList<com.eos.files.File>
 	 */
-	public ArrayList<com.eos.files.File> fileForUsers(String category) {
+	public ArrayList<com.eos.files.File> fileForUsers(String category, String isParent) {
 
 		ArrayList<com.eos.files.File> initList = eos.files().getAccountFilesWithCategory();
 		int size = initList.size();
 		ArrayList<com.eos.files.File> lst = new ArrayList<com.eos.files.File>();
-		int iCat = eos.d(category);
+		
+		com.askredrover.wisdom.Category cat = rr.wisdom().categories().category(category);
+		if(cat!=null) {
+			
+		int iCat = cat.catid();
+		boolean isSibling = cat.isSibling();
 
-		for (int x = 0; x < size; x++) {
-
-			com.eos.files.File f = (com.eos.files.File) initList.get(x);
-
-			if (f.active() && f.categoryid() == iCat) {
-
-				if (passSecurityCheck(f)) {
-
-					if (f.companyid() > 0) {
-
-						if (isInStore(f.companyid())) {
-							lst.add(f);
-						}
-
-					} else {
-
+			for (int x = 0; x < size; x++) {
+	
+				com.eos.files.File f = (com.eos.files.File) initList.get(x);
+	
+				if (f.active() && f.categoryid() == iCat) {
+	
+					if (eos.isAdmin()) {
 						lst.add(f);
-
+					} else {
+	
+						if (passSecurityCheck(f)) {
+	
+							if (f.companyid() > 0) {
+	
+								if (isInStore(f.companyid())) {
+									lst.add(f);
+								}
+	
+							} else {
+	
+								lst.add(f);
+	
+							}
+	
+						}
+	
 					}
-
 				}
+	
 			}
-
+			
+			if(!isSibling) { 
+				lst.addAll(getSiblingFiles(iCat));
+			}
+			
 		}
-
 		return lst;
 
+	}
+	
+	private ArrayList<com.eos.files.File> getSiblingFiles(int iCat) {
+
+		ArrayList<com.eos.files.File> initList = siblingFiles(iCat);
+		
+		int size = initList.size();
+		
+		ArrayList<com.eos.files.File> lst = new ArrayList<com.eos.files.File>();
+		
+		String strCat = eos.e(iCat);
+		
+		com.askredrover.wisdom.Category cat = rr.wisdom().categories().category(strCat);
+		
+		if(cat!=null) {
+			
+		
+			for (int x = 0; x < size; x++) {
+	
+				com.eos.files.File f = (com.eos.files.File) initList.get(x);
+	
+				if (f.active() && f.categoryid() == iCat) {
+	
+					if (eos.isAdmin()) {
+						lst.add(f);
+					} else {
+	
+						if (passSecurityCheck(f)) {
+	
+							if (f.companyid() > 0) {
+	
+								if (isInStore(f.companyid())) {
+									lst.add(f);
+								}
+	
+							} else {
+	
+								lst.add(f);
+	
+							}
+	
+						}
+	
+					}
+				}
+	
+			}
+			
+		
+			
+		}
+		return lst;
+
+	}
+	
+	/**
+	 * Gets all the files for siblings of a category.
+	 * @param iCat
+	 * @return
+	 */
+	private ArrayList<File> siblingFiles(int iCat) { 
+		
+		ArrayList<File> lst = new ArrayList<File>();
+		String strCat = eos.e(iCat);
+		Connection c = eos.c();
+		Statement  s = null;
+		ResultSet rs = null;
+		try { 
+			
+			s = c.createStatement();
+			
+			rs = s.executeQuery("select catid from wisdom_categories where siblingid=" + iCat + "");
+			while(rs.next())
+			{
+				ArrayList<File> files = eos.files().getFilesByCategory(strCat);
+				lst.addAll(files);
+			}
+			
+		} catch(Exception e)
+		{
+			eos.log("Errors getting sibling files. Err:" + e.toString(),"Files","siblingFiles",2);
+		} finally { 
+			eos.cleanup(c, s,rs);
+		}
+		
+		return lst;
 	}
 
 	/**

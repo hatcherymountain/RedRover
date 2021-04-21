@@ -31,7 +31,8 @@ public interface Article {
 	public int categoryid();
 
 	public String statusAsString();
-	
+
 	public boolean live();
 
+	public String youtube();
 }

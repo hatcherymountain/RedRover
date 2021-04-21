@@ -3,11 +3,11 @@ package com.askredrover.wisdom;
 public class TutorialObject implements Tutorial {
 
 	private int tid, eid, aid, sid, cid, status, role = 0;
-	private String title, desc = null;
+	private String title, desc, youtube = null;
 	private java.sql.Date added = null;
 
 	public TutorialObject(int tid, int eid, int aid, int sid, String title, String desc, int cid, java.sql.Date added,
-			int status, int role) {
+			int status, int role, String youtube) {
 		this.tid = tid;
 		this.eid = eid;
 		this.aid = aid;
@@ -18,10 +18,15 @@ public class TutorialObject implements Tutorial {
 		this.added = added;
 		this.status = status;
 		this.role = role;
+		this.youtube = youtube;
 	}
 
 	public int tid() {
 		return tid;
+	}
+
+	public String youtube() {
+		return youtube;
 	}
 
 	public int eid() {
@@ -55,7 +60,7 @@ public class TutorialObject implements Tutorial {
 	public int status() {
 		return status;
 	}
-	
+
 	public String statusAsString() {
 		return com.askredrover.Constants.tutorialStatusAsString(status);
 	}

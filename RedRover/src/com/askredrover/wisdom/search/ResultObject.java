@@ -14,7 +14,7 @@ public class ResultObject implements Result {
 	public ResultObject(ArrayList<File> files, ArrayList<Article> articles, ArrayList<Tutorial> tutorials) {
 		this.files = files;
 		this.articles = articles;
-		this.tutorials=tutorials;
+		this.tutorials = tutorials;
 	}
 
 	public ArrayList<File> files() {
@@ -25,9 +25,8 @@ public class ResultObject implements Result {
 		return articles;
 	}
 
-		
-	public ArrayList<Tutorial> tutorials() { 
-		return tutorials; 
+	public ArrayList<Tutorial> tutorials() {
+		return tutorials;
 	}
 
-}	
+}

@@ -52,14 +52,14 @@ public class CategoryObject implements Category {
 			return false;
 		}
 	}
-	
-	public boolean isParent() { 
-		
+
+	public boolean isParent() {
+
 		if (parentid == 0 && siblingid == 0) {
 			return true;
-		} else { 
+		} else {
 			return false;
 		}
-		
+
 	}
 }

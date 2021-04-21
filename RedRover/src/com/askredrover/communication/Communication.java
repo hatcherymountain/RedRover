@@ -13,7 +13,7 @@ public interface Communication {
 	public boolean weekly();
 
 	public boolean monthly();
-	
+
 	public boolean annual();
 
 	public boolean verbose();
@@ -21,7 +21,7 @@ public interface Communication {
 	public boolean groupConsolidation();
 
 	public boolean companyConsolidation();
-	
+
 	public java.sql.Date lastUpdated();
 
 }

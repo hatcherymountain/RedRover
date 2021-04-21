@@ -1,19 +1,19 @@
 package com.askredrover.wisdom.loyalty;
 
+import com.eos.accounts.User;
+
 public class Kudo {
 
-	private int kid, eid, userid, id, typeof = 0;
+	private User user = null;
+	private int kid, eid, id, typeof = 0;
 
-	private String comment = null;
-
-	public Kudo(int kid, int eid, int userid, int id, int typeof, String comment) {
+	public Kudo(int kid, int eid, User user, int id, int typeof) {
 
 		this.kid = kid;
 		this.eid = eid;
-		this.userid = userid;
+		this.user = user;
 		this.id = id;
 		this.typeof = typeof;
-		this.comment = comment;
 
 	}
 
@@ -25,8 +25,8 @@ public class Kudo {
 		return eid;
 	}
 
-	public int userid() {
-		return userid;
+	public User user() {
+		return user;
 	}
 
 	public int id() {
@@ -35,10 +35,6 @@ public class Kudo {
 
 	public int typeof() {
 		return typeof;
-	}
-
-	public String comment() {
-		return comment;
 	}
 
 }

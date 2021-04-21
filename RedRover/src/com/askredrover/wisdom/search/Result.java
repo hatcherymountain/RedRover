@@ -8,12 +8,10 @@ import com.eos.files.File;
 
 public interface Result {
 
-	
 	public ArrayList<File> files();
 
 	public ArrayList<Article> articles();
-	
+
 	public ArrayList<Tutorial> tutorials();
-	
-	
+
 }

@@ -21,18 +21,18 @@ public class Wisdom {
 
 	public Files files() {
 		if (files == null) {
-			files = new Files(eos);
+			files = new Files(eos,rr);
 		}
 		return files;
 	}
-	
-	
-	public Tutorials tutorials() { 
-		if(tuts==null) { 
-			tuts = new Tutorials(eos,rr);
+
+	public Tutorials tutorials() {
+		if (tuts == null) {
+			tuts = new Tutorials(eos, rr);
 		}
 		return tuts;
 	}
+
 	/**
 	 * All wisdom categories
 	 * 

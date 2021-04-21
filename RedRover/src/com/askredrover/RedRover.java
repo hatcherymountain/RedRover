@@ -1,12 +1,13 @@
 package com.askredrover;
 
+import com.askredrover.wisdom.loyalty.Loyalty;
 import com.eos.Eos;
 import com.askredrover.utils.*;
 import com.askredrover.pinpoint.Messages;
 import com.askredrover.wisdom.*;
 import com.askredrover.ventures.*;
 import com.askredrover.communication.*;
-
+import com.askredrover.support.*;
 
 public class RedRover {
 
@@ -20,35 +21,65 @@ public class RedRover {
 	private boolean showWisdom = false;
 	private boolean showVentures = false;
 	private Wisdom wisdom = null;
-	private boolean admin = false;
 	private Users users = null;
+	private Loyalty loyal = null;
+	private Support support = null;
 
 	public RedRover(Eos eos) {
 		this.eos = eos;
 		showWisdom = true;
 		showVentures = true;
 	}
-	
+
 	/**
-	 * User Communications Framework. Provides the backbone for how we communicate with customers and when.
-	 */
-	public Communications communication() { 
-		if(comms == null) { 
-			comms = new Communications(eos,this);
-		} 
-		return comms;
-	}
-	
-	/**
-	 * Get all ventures
+	 * Access to Support.
 	 * 
 	 * @return
 	 */
-	public Ventures ventures() {
-		if (ventures == null) {
-			ventures = new Ventures(eos, this);
+	public Support support() {
+		support = new Support(eos);
+		return support;
+	}
+
+	/**
+	 * Later we can add more layers ABOVE the EOS idea of an ADMIN. We need to do
+	 * this as Pointr creates some problems
+	 * 
+	 * @return
+	 */
+	public boolean admin() {
+		if (eos.active()) {
+			if (eos.isAdmin()) {
+				return true;
+			} else {
+				return false;
+			}
+		} else {
+			return false;
 		}
-		return ventures;
+	}
+
+	/**
+	 * User Communications Framework. Provides the backbone for how we communicate
+	 * with customers and when.
+	 */
+	public Communications communication() {
+		if (comms == null) {
+			comms = new Communications(eos, this);
+		}
+		return comms;
+	}
+
+	public boolean editor() {
+		if (eos.active()) {
+			if (eos.isContributor()) {
+				return true;
+			} else {
+				return false;
+			}
+		} else {
+			return false;
+		}
 	}
 
 	public Events events() {
@@ -71,54 +102,29 @@ public class RedRover {
 		}
 		return loc;
 	}
-	
-	/**
-	 * Users services
-	 * @return
-	 */
-	public Users users() { 
-		if(users==null) { 
-			users = new Users(eos,this);
-		}
-		return users;
-	}
 
 	/**
-	 * Later we can add more layers ABOVE the EOS idea of an ADMIN. We need to do
-	 * this as Pointr creates some problems
+	 * Loyalty includes bookmarketing and kudos!
 	 * 
 	 * @return
 	 */
-	public boolean admin() {
-		if (eos.active()) {
-			if (eos.isAdmin()) {
-				return true;
-			} else {
-				return false;
-			}
-		} else {
-			return false;
+	public Loyalty loyalty() {
+		if (loyal == null) {
+			loyal = new Loyalty(eos, this);
 		}
+		return loyal;
 	}
 
-	public boolean editor() {
-		if (eos.active()) {
-			if (eos.isContributor()) {
-				return true;
-			} else {
-				return false;
-			}
-		} else {
-			return false;
+	/**
+	 * Access to Phone Message utilities.
+	 * 
+	 * @return
+	 */
+	public Messages messages() {
+		if (messages == null) {
+			messages = new Messages(eos);
 		}
-	}
-
-	public boolean wisdomEnabled() {
-		return showWisdom;
-	}
-
-	public boolean venturesEnabled() {
-		return showVentures;
+		return messages;
 	}
 
 	/**
@@ -134,15 +140,31 @@ public class RedRover {
 	}
 
 	/**
-	 * Access to Phone Message utilities.
+	 * Users services
 	 * 
 	 * @return
 	 */
-	public Messages messages() {
-		if (messages == null) {
-			messages = new Messages(eos);
+	public Users users() {
+		if (users == null) {
+			users = new Users(eos, this);
 		}
-		return messages;
+		return users;
+	}
+
+	/**
+	 * Get all ventures
+	 * 
+	 * @return
+	 */
+	public Ventures ventures() {
+		if (ventures == null) {
+			ventures = new Ventures(eos, this);
+		}
+		return ventures;
+	}
+
+	public boolean venturesEnabled() {
+		return showVentures;
 	}
 
 	public Wisdom wisdom() {
@@ -150,6 +172,10 @@ public class RedRover {
 			wisdom = new Wisdom(eos, this);
 		}
 		return wisdom;
+	}
+
+	public boolean wisdomEnabled() {
+		return showWisdom;
 	}
 
 }
