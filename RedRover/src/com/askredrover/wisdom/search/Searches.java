@@ -173,20 +173,30 @@ public class Searches {
 			try {
 
 				ArrayList<com.eos.files.File> origLst = eos.files().getAccountFiles(eos.user().getAccountId());
+					
 				int size = origLst.size();
 
+				
 				for (int i = 0; i < size; i++) {
+					
 					com.eos.files.File f = (com.eos.files.File) origLst.get(i);
-
+					
+					
 					if (f.categoryid() > 0 && f.active()) {
 
 						if (rr.wisdom().files().passSecurityCheck(f)) {
+								
+							
+							
 							if (f.companyid() > 0) {
-
+								
+								
+								
 								if (isInStore(f.companyid())) {
 									lst.add(f);
-								}
-
+								} 
+								
+								
 							} else {
 								lst.add(f);
 							}
@@ -202,6 +212,8 @@ public class Searches {
 			}
 
 		}
+		
+		//eos.log("Retun SIZE:" + lst.size());
 		return lst;
 	}
 

@@ -136,6 +136,7 @@ public class Categories {
 				s = c.createStatement();
 				int cid = eos.d(catid);
 				String sql = "select count(*) from eos_files where categoryid=" + cid + " and status=1";
+				
 				rs = s.executeQuery(sql);
 				while (rs.next()) {
 					count = rs.getInt(1);
@@ -176,14 +177,10 @@ public class Categories {
 	public int totalItems(String catid) {
 		int t = 0;
 
-		if (eos.isAdmin()) {
-			int ct = countTutorials(catid);
+			int ct = countTutorials(catid); 
 			int ca = countArticles(catid);
 			int cf = countFiles(catid);
 			t = ct + ca + cf;
-			
-		}
-
 		return t;
 	}
 
