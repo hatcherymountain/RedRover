@@ -474,7 +474,73 @@ public class Ventures {
 		}
 		return venture;
 	}
+	
+	
+	/**
+	 * Get Ventures
+	 * 
+	 * @param status
+	 * @return
+	 */
+	public ArrayList<Venture> getMyVentures(String status) {
+		ArrayList<Venture> lst = new ArrayList<Venture>();
+		if (eos.active()) {
+			int iStatus = eos.d(status);
 
+			/** if iStatus == -1 we get ALL **/
+
+			Connection c = eos.c();
+			Statement s = null;
+			ResultSet rs = null;
+
+			try {
+
+				s = c.createStatement();
+
+				int eid = eos.account().eid();
+				String sql = "select vid,eid,aid,cid,title,description,typeof,status,added,entered,author,groupid, color,progress,sentiment from rr_venture where eid="
+						+ eid + "";
+				if (iStatus > -1) {
+					sql = sql + " and status=" + iStatus + "";
+				}
+
+				rs = s.executeQuery(sql);
+				
+				while (rs.next()) {
+					int v = rs.getInt(1);
+					int e = rs.getInt(2);
+					int a = rs.getInt(3);
+					int _c = rs.getInt(4);
+					String t = rs.getString(5);
+					String d = rs.getString(6);
+					int to = rs.getInt(7);
+					int st = rs.getInt(8);
+					java.sql.Date ad = rs.getDate(9);
+					java.sql.Timestamp en = rs.getTimestamp(10);
+					int au = rs.getInt(11);
+					int groupid = rs.getInt(12);
+					String color = rs.getString(13);
+					int pro = rs.getInt(14);
+					int sen = rs.getInt(15);
+					
+					if(isMember(v,eos.user().getUserId())) { 
+						VentureObject ven = new VentureObject(v, e, a, _c, t, d, to, st, ad, en, au, groupid, color, pro,sen);
+						lst.add(ven);
+					}
+				}
+
+			} catch (Exception e) {
+				eos.log("Errors getting ventures. Err:" + e.toString(), "Ventures", "get", 2);
+			} finally {
+				eos.cleanup(c, s, rs);
+			}
+
+		}
+		return lst;
+	}
+
+	
+	
 	/**
 	 * Get Ventures
 	 * 
@@ -605,6 +671,9 @@ public class Ventures {
 
 		sb.append("<select name=\"" + selectName + "\" class=\"form-control\">");
 		sb.append("<option value=\"0\">Select a group</option/>");
+		
+		if(size>0) { 
+		
 		for (int x = 0; x < size; x++) {
 
 			Group g = (Group) groups().get(x);
@@ -615,6 +684,12 @@ public class Ventures {
 			} else {
 				sb.append("<option  value=\"" + eid + "\">" + g.name() + "</option>");
 			}
+		}
+		
+		} else {
+			
+			sb.append("<option  value=\"" + eos.e(0) + "\">No groups have been added...</option>");
+			
 		}
 
 		sb.append("</select>");
@@ -627,7 +702,7 @@ public class Ventures {
 	 * 
 	 * @param vid
 	 */
-	private void addSOWStub(int vid) {
+	private void addSOWStub(int vid, String start, String end) {
 		Connection c = eos.c();
 		Statement s = null;
 
@@ -752,30 +827,43 @@ public class Ventures {
 		ResultSet rs = null;
 		String title = "";
 		String desc = "";
-
+		
+		
+		/** Deal with dates so we can handle in final **/
+		String start = r.getParameter("vstart");
+		if(start==null || start.length() == 0) { 
+			start=com.eos.utils.Calendar.getTodayForSQL();
+		} else { 
+			start = com.eos.utils.Calendar.clean(start);
+		}
+		String end   = r.getParameter("vend");
+		end = com.eos.utils.Calendar.clean(end);
+		
+		
 		try {
 
 			int eid = eos.account().eid();
 			int aid = eos.user().getAccountId();
 			String today = com.eos.utils.Calendar.getTodayForSQL();
-			int iGroup = eos.d(r.getParameter("groupid"));
+			int iGroup = eos.d(r.getParameter("vgroup"));
 
 			String sql = "insert into rr_venture values(null,?,?,?,?,?,?,?,'" + today + "',NOW(),?,?,?,0,?)";
 
 			p = c.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
-			title = com.eos.Eos.clean(r.getParameter("title"));
-			desc = com.eos.Eos.clean(r.getParameter("vinfo"));
-			String color = com.eos.Eos.clean(r.getParameter("color"));
-			String _type = r.getParameter("vtype");
+			title = com.eos.Eos.clean(r.getParameter("vname"));
+			desc = com.eos.Eos.clean(r.getParameter("vdesc"));
+			String color = com.eos.Eos.clean(r.getParameter("vcolor"));
+			String _type = r.getParameter("ptype");
 			int iType = com.eos.utils.Strings.getIntFromString(_type);
-
+			
+			
 			if (title.length() == 0) {
 				title = "Venture - " + today + "";
 			}
 
 			p.setInt(1, eid);
 			p.setInt(2, aid);
-			p.setInt(3, eos.d(r.getParameter("cid")));
+			p.setInt(3, eos.d(r.getParameter("vcustomer")));
 			p.setString(4, title);
 			p.setString(5, desc);
 			p.setInt(6, iType);
@@ -801,7 +889,7 @@ public class Ventures {
 				addInitialEvent(vid, title, desc);
 				addOwner(vid);
 				addInitialMembers(vid, r);
-				addSOWStub(vid);
+				addSOWStub(vid,start,end);
 			}
 		}
 

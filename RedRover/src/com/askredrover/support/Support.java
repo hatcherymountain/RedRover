@@ -147,7 +147,7 @@ public class Support {
 	 * @param typeof
 	 * @param reason
 	 */
-	private void notifyAdmins(String t, String m, String typeof, String reason, User user) {
+	private void notifyAdmins(String t, String m, String typeof, String reason, String fileid, User user) {
 
 		if (eos.active()) {
 
@@ -165,24 +165,32 @@ public class Support {
 				sb.append("Customer sent us the following feedback...<BR>");
 				subj = "Feedback:" + t + "";
 			}
+			
+			com.eos.files.File f = null;
+			int iFile = eos.d(fileid);
+			if(iFile > 0) { 
+				f = eos.files().getFile(fileid);
+			}
+			
 			sb.append("<b>Name:</b> " + user.getFirstName() + "  " + user.getLastName() + "<BR>");
 			sb.append("<b>Email:</b> <a href=" + user.getEmail() + ">" + user.getEmail() + "</a><BR>");
 			sb.append("<b>Phone:</b> " + user.phoneFormatted() + "<br>");
 			sb.append("<b>Title:</b> " + t + "<BR>");
 			sb.append("<b>Reason:</b> " + r + "<br>");
-
-			sb.append("<B>Message:</b> " + m + "");
+			sb.append("<B>Message:</b> " + m + "<br>");
+			if(f!=null) { 
+				sb.append("<b>File Attachment:</b> <a href=" + f.url() + " target=f>" + f.originalFileName() + "</a>");
+			}
 
 			String aid = eos.e(eos.user().getAccountId());
 			ArrayList<User> admins = eos.getUsers().getAccountAdmins(aid);
 			int size = admins.size();
-			eos.log("Number admins:" + size + "");
+		//	eos.log("Number admins:" + size + "");
 			for (int i = 0; i < size; i++) {
 				User admin = (User) admins.get(i);
 				if (admin != null) {
 					eos.emails().send("notifyadminofrequest.html", admin.getEmail(), subj, admin.getFirstName(), "", "",
 							"", sb.toString());
-					eos.log("Sent " + admin.getEmail() + " email...");
 				}
 			}
 		}
@@ -241,7 +249,7 @@ public class Support {
 	 * @param typeof
 	 * @param reason
 	 */
-	public void post(String title, String message, String typeof, String reason) {
+	public void post(String title, String message, String typeof, String reason, String fileid) {
 		User user = null;
 		if (eos.active()) {
 			int iType = com.eos.utils.Strings.getIntFromString(typeof);
@@ -252,6 +260,7 @@ public class Support {
 			int eid = eos.account().eid();
 			title = com.eos.Eos.clean(title);
 			message = com.eos.Eos.clean(message);
+			int iFileid = eos.d(fileid);
 
 			user = eos.user();
 
@@ -262,14 +271,16 @@ public class Support {
 
 				s = c.createStatement();
 				String sql = "insert into rr_support values(null," + eid + "," + aid + ",'" + added + "',null," + uid
-						+ "," + iType + "," + iReason + ",'" + title + "','" + message + "',0)";
+						+ "," + iType + "," + iReason + ",'" + title + "','" + message + "',0," + iFileid + ")";
+				
+				
 				s.execute(sql);
 
 			} catch (Exception e) {
 				eos.log("Errors posting RedRover feedback. Err:" + e.toString(), "Support", "post", 2);
 			} finally {
 				eos.cleanup(c, s);
-				notifyAdmins(title, message, typeof, reason, user);
+				notifyAdmins(title, message, typeof, reason,fileid, user);
 				notifyCustomer(title, message, typeof, reason);
 			}
 		}

@@ -53,7 +53,28 @@ public class Constants {
 	public static final String[] VENTURE_SENTIMENTS = { "Fantastic", "Great", "Good", "Average", "Could be better",
 			"Not good", "Awful" };
 	public static final int VENTURE_SENTIMENT_GOOD = 2;
-
+	
+	/**
+	 * Get various venture states as HTML select list.
+	 * @param current
+	 * @return
+	 */
+	public static String ventureStatesAsSelection(int current) { 
+		StringBuffer sb = new StringBuffer();
+		
+		for(int x = 0; x < VENTURE_STATES.length;x++)
+		{
+			String s = (String)VENTURE_STATES[x];
+			if(x==current) { 
+				sb.append("<option selected value=" + x + ">" + s + "</option>");
+			} else { 
+				sb.append("<option  value=" + x + ">" + s + "</option>");
+			}
+		}
+		
+		return sb.toString();
+	}
+	
 	/**
 	 * What is the current venture sentiment.
 	 * 
@@ -437,6 +458,7 @@ public class Constants {
 		lst.add(new com.askredrover.support.SupportType(52, "Performance", 1));
 		lst.add(new com.askredrover.support.SupportType(53, "Requesting New Feature", 1));
 		lst.add(new com.askredrover.support.SupportType(54, "UI/UX", 1));
+		lst.add(new com.askredrover.support.SupportType(55, "New Content", 1));
 
 		return lst;
 	}

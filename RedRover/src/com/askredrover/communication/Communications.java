@@ -14,7 +14,53 @@ public class Communications {
 		this.eos = eos;
 		this.rr = rr;
 	}
-
+	
+	/**
+	 * Generates a useful Share link.
+	 * @param identifier
+	 * @param typeof
+	 * @return
+	 */
+	public String shareLink(String identifier, String typeof)
+	{
+		String l = ""; 
+		if(eos.active()) {
+			int id = eos.d(identifier);
+			String newid = obfuscate(id);
+			int iT = com.eos.utils.Strings.getIntFromString(typeof);
+			l = eos.url() + "?oid=" + newid + "&t=" + iT + "";
+			l = com.eos.utils.TinyURL.getTinyUrl(l);
+		}
+		return l;
+	}
+	
+	/** Given an ID obfuscate it. Maybe in future we will do something way more secure but really, there is no need @ this point since the system is only used in 'closed' environments @ moment like Dee-O-Gee...**/
+	public String obfuscate(int id) { 
+		int a1 = com.eos.utils.Math.getRandomNumber(10);
+		int a2 = com.eos.utils.Math.getRandomNumber(10);
+		int a3 = com.eos.utils.Math.getRandomNumber(10);
+		int a4 = com.eos.utils.Math.getRandomNumber(10);
+		int a5 = com.eos.utils.Math.getRandomNumber(10);
+		return a1 + "" + a2 + "" + a3 + "" + a4 + "" + a5  + "" + id + "";
+	}
+	
+	/**
+	 * Get a de-obfuscated value which it turned to an INT.
+	 * @param id
+	 * @return
+	 */
+	public int deobfuscatedID(String id) { 
+		int iRet = 0;
+		try { 
+		if(id == null) { id = ""; } 
+			String n = id.substring(5);
+			iRet = com.eos.utils.Strings.getIntFromString(n);
+		} catch(Exception e) { 
+			
+		}
+		return iRet;
+	}
+	
 	/**
 	 * Super important method. It checks to see if there is a record for this user
 	 * before we start querying it. If there is no record, we create a stub with

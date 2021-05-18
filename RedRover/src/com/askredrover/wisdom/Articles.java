@@ -1,5 +1,5 @@
 package com.askredrover.wisdom;
-
+import com.eos.files.File;
 import com.eos.Eos;
 import java.sql.*;
 import com.askredrover.RedRover;
@@ -14,7 +14,459 @@ public class Articles {
 		this.eos = eos;
 		this.rr = rr;
 	}
+	
+	/**
+	 * Get the map list for a particular article.
+	 * @param aid
+	 * @return
+	 */
+	private ArrayList<Integer> getMapList(int aid) { 
+		ArrayList<Integer> lst = new ArrayList<Integer>();
+		if(eos.active())
+		{
+			Connection c = eos.c();
+			Statement  s = null;
+			ResultSet rs = null;
+			
+			try { 
+				
+				s = c.createStatement();
+				rs = s.executeQuery("select distinct linkedid from wisdom_linkmap where articleid=" + aid + "");
+				while(rs.next())
+				{
+					lst.add(rs.getInt(1));
+				}
+				
+			} catch(Exception e) { 
+				eos.log("Errors getting map list. Err:" + e.toString(),"Articles","getMapList",2);
+			} finally {
+				eos.cleanup(c, s,rs);
+			}
+			
+		}
+		
+		return lst;
+	}
+	
+	/**
+	 * Get all articles linked to a parent article.
+	 * @param parentid
+	 * @return ArrayList of Article objects.
+	 */
+	public ArrayList<Article> getLinkedArticles(String parentid) { 
+		ArrayList<Article> lst = new ArrayList<Article>();
+		int pid = eos.d(parentid);
+		if(eos.active())
+		{
+			Connection c = eos.c();
+			Statement  s = null;
+			ResultSet rs = null;
+			
+			try { 
+				
+				s = c.createStatement();
+				rs = s.executeQuery("select distinct linkedid from wisdom_linkmap where articleid=" + pid + "");
+				while(rs.next())
+				{
+					int id = rs.getInt(1);
+					Article a = this.get(id);
+					if(a!=null) { 
+						lst.add(a);
+					}
+				}
+				
+			} catch(Exception e) { 
+				eos.log("Errors getting map list. Err:" + e.toString(),"Articles","getMapList",2);
+			} finally {
+				eos.cleanup(c, s,rs);
+			}
+			
+		}
+		return lst;
+	}/**
+	 * Get all articles linked to a parent article.
+	 * @param parentid
+	 * @return ArrayList of Article objects.
+	 */
+	public ArrayList<File> getLinkedFiles(String parentid) { 
+		ArrayList<File> lst = new ArrayList<File>();
+		int pid = eos.d(parentid);
+		if(eos.active())
+		{
+			Connection c = eos.c();
+			Statement  s = null;
+			ResultSet rs = null;
+			
+			try { 
+				
+				s = c.createStatement();
+				rs = s.executeQuery("select distinct fileid from wisdom_linkfiles where articleid=" + pid + "");
+				while(rs.next())
+				{
+					int id = rs.getInt(1);
+					String _fid = eos.e(id);
+					File f = eos.files().getFile(_fid);
+					if(f!=null) { 
+						lst.add(f);
+					}
+				}
+				
+			} catch(Exception e) { 
+				eos.log("Errors getting map FILE list. Err:" + e.toString(),"Articles","getLinkedFiles",2);
+			} finally {
+				eos.cleanup(c, s,rs);
+			}
+			
+		}
+		return lst;
+	}
+	
+	
+	
+	/**
+	 * removes an article linked to a parent.
+	 * @param parentid
+	 * @param aid
+	 */
+	public void removeLinkedArticle(String parentid, String aid)
+	{
+		if(eos.isAdmin())
+		{
+			Connection c = eos.c();
+			Statement  s = null;
+			try { 
+				
+				s = c.createStatement();
+				
+				int pid = eos.d(parentid);
+				int id = eos.d(aid);
+				
+				String sql = "delete from wisdom_linkmap where articleid=" + pid + " and linkedid=" + id + "";
+				s.execute(sql);
+				
+			} catch(Exception e)
+			{
+				eos.log("Errors removing linked article. Err:" + e.toString(),"Articles","removeLinkedArticle",2);
+			} finally { 
+				eos.cleanup(c,s);
+			}
+		}
+	}
+	
+	/**
+	 * removes an file linked to a parent.
+	 * @param parentid
+	 * @param Encoded File Identifier
+	 */
+	public void removeLinkedFile(String parentid, String fid)
+	{
+		if(eos.isAdmin())
+		{
+			Connection c = eos.c();
+			Statement  s = null;
+			try { 
+				
+				s = c.createStatement();
+				
+				int pid = eos.d(parentid);
+				int id = eos.d(fid);
+				
+				String sql = "delete from wisdom_linkfiles where articleid=" + pid + " and fileid=" + id + "";
+				s.execute(sql);
+				
+			} catch(Exception e)
+			{
+				eos.log("Errors removing linked FILE. Err:" + e.toString(),"Articles","removeLinkedFile",2);
+			} finally { 
+				eos.cleanup(c,s);
+			}
+		}
+	}
+	
+	
+	/**
+	 * Responsible for linking files to an article.
+	 * @param parentid
+	 * @param fileid
+	 * @param checked
+	 */
+	public void linkFile(String parentid, String fileid, String checked)
+	{
+		int iPid = eos.d(parentid);
+		int iFid = eos.d(fileid);
+		checked = com.eos.Eos.clean(checked);
+		int iCheck = 0;
+		if(checked.equals("true")) { iCheck = 1; } 
+		
+		Connection c = eos.c();
+		Statement  s = null;
 
+		try { 
+			
+			s = c.createStatement();
+			
+			if(iCheck == 1) { 
+				
+				s.execute("insert into wisdom_linkfiles values(" + iPid + "," + iFid + ")");
+				
+			} else { 
+				
+				s.execute("delete from wisdom_linkfiles where articleid=" + iPid + " and fileid=" + iFid + "");
+				
+			}
+			
+			
+			
+			
+		} catch(Exception e)
+		{
+			eos.log("Errors linking or delinking files from an article. Err:" + e.toString(),"Articles","linkFile",2);
+		} finally { 
+			eos.cleanup(c,s);
+		}
+		
+	}
+	/**
+	 * Links an article
+	 * @param parentid
+	 * @param articleid
+	 * @param checked
+	 */
+	public void link(String parentid, String articleid, String checked)
+	{
+		int iPid = eos.d(parentid);
+		int iAid = eos.d(articleid);
+		checked = com.eos.Eos.clean(checked);
+		int iCheck = 0;
+		if(checked.equals("true")) { iCheck = 1; } 
+		
+		Connection c = eos.c();
+		Statement  s = null;
+
+		try { 
+			
+			s = c.createStatement();
+			
+			if(iCheck == 1) { 
+				
+				s.execute("insert into wisdom_linkmap values(" + iPid + "," + iAid + ")");
+				
+			} else { 
+				
+				s.execute("delete from wisdom_linkmap where articleid=" + iPid + " and linkedid=" + iAid + "");
+				
+			}
+			
+			
+			
+			
+		} catch(Exception e)
+		{
+			eos.log("Errors linking or delinking article. Err:" + e.toString(),"Articles","link",2);
+		} finally { 
+			eos.cleanup(c,s);
+		}
+		
+	}
+	
+	/**
+	 * Is a given article linked to a parent article?
+	 * @param parentid
+	 * @param aid
+	 * @return
+	 */
+	public boolean isArticleLinked(String parentid, String aid) { 
+		boolean is = false;
+		
+		Connection c = eos.c();
+		Statement  s = null;
+		ResultSet rs = null;
+		
+		try { 
+		
+			int pid = eos.d(parentid);
+			int id  = eos.d(aid);
+			
+			s = c.createStatement();
+			String sql = "select count(*) from wisdom_linkmap where articleid=" + pid + " and linkedid=" + id + "";
+			rs = s.executeQuery(sql);
+			while(rs.next())
+			{
+				if(rs.getInt(1)>0) { 
+					is = true;
+				}
+			}
+			
+		} catch(Exception e) { 
+			eos.log("Errors determining whether article linked to a parent article. Err::" + e.toString(),"Articles","isArticleLinked",2);
+		} finally { 
+			eos.cleanup(c, s, rs);
+		}
+		
+		return is;
+	}
+	/**
+	 * Is a given article linked to a parent article?
+	 * @param parentid
+	 * @param aid
+	 * @return
+	 */
+	public boolean isFileLinked(String parentid, String fid) { 
+		boolean is = false;
+		
+		Connection c = eos.c();
+		Statement  s = null;
+		ResultSet rs = null;
+		
+		try { 
+		
+			int pid = eos.d(parentid);
+			int id  = eos.d(fid);
+			
+			s = c.createStatement();
+			String sql = "select count(*) from wisdom_linkfiles where articleid=" + pid + " and fileid=" + id + "";
+			rs = s.executeQuery(sql);
+			while(rs.next())
+			{
+				if(rs.getInt(1)>0) { 
+					is = true;
+				}
+			}
+			
+		} catch(Exception e) { 
+			eos.log("Errors determining whether FILE linked to a parent article. Err::" + e.toString(),"Articles","isFileLinked",2);
+		} finally { 
+			eos.cleanup(c, s, rs);
+		}
+		
+		return is;
+	}	
+	/**
+	 * Determines whether a given article is or is not in the list.
+	 * @param lst
+	 * @param id
+	 * @return
+	 */
+	private boolean inLinkList(ArrayList<Integer> lst, int id) { 
+		boolean is  = false;
+		
+		int size = lst.size();
+		for(int i = 0; i < size; i++) {
+			int eid = (int)lst.get(i);
+			if(eid==id) { 
+				is = true; break;
+			}
+		}
+		
+		return is;
+	}
+	
+	
+	/**
+	 * Links other articles to a given article
+	 */
+	public void link(javax.servlet.http.HttpServletRequest r)
+	{
+		if(eos.isAdmin()) { 
+			
+			Connection c = eos.c();
+			Statement  s = null;
+			
+			try { 
+				
+				
+				s = c.createStatement();
+				
+				String aid = r.getParameter("articleid"); int iAid = eos.d(aid);
+				if(iAid > 0)
+				{
+					
+					ArrayList<Integer> lst = getMapList(iAid);
+					
+					/** Get the links **/
+					String[] linkids = r.getParameterValues("linkid");
+					int linksize  = linkids.length;
+					
+					for(int i = 0; i < linksize; i++) { 
+						String linkid = (String)linkids[i];
+						int id = eos.d(linkid);
+						
+						if(!inLinkList(lst,id)) { 
+							s.addBatch("insert into wisdom_linkmap values(" + iAid + "," + id + ")");
+						}
+					}
+					
+					s.executeBatch();
+					
+					
+				}
+				
+				
+				
+			} catch(Exception e)
+			{
+				eos.log("Errors linking articles to a parent. Err:" + e.toString(),"Articles","link",2);
+			} finally { 
+				eos.cleanup(c,s);
+			}
+			
+			
+		}
+	}
+	
+	
+	/**
+	 * Links other files to a given article
+	 */
+	public void linkFile(javax.servlet.http.HttpServletRequest r)
+	{
+		if(eos.isAdmin()) { 
+			
+			Connection c = eos.c();
+			Statement  s = null;
+			
+			try { 
+				
+				
+				s = c.createStatement();
+				
+				String aid = r.getParameter("articleid"); int iAid = eos.d(aid);
+				if(iAid > 0)
+				{
+					
+					ArrayList<Integer> lst = getMapList(iAid);
+					
+					/** Get the links **/
+					String[] linkids = r.getParameterValues("linkid");
+					int linksize  = linkids.length;
+					
+					for(int i = 0; i < linksize; i++) { 
+						String linkid = (String)linkids[i];
+						int id = eos.d(linkid);
+						
+						if(!inLinkList(lst,id)) { 
+							s.addBatch("insert into wisdom_linkmap values(" + iAid + "," + id + ")");
+						}
+					}
+					
+					s.executeBatch();
+					
+					
+				}
+				
+				
+				
+			} catch(Exception e)
+			{
+				eos.log("Errors linking articles to a parent. Err:" + e.toString(),"Articles","link",2);
+			} finally { 
+				eos.cleanup(c,s);
+			}
+			
+			
+		}
+	}
+	
 	/**
 	 * Updates the header image for an article.
 	 * 
@@ -220,14 +672,22 @@ public class Articles {
 			}
 		}
 	}
-
+	
+	/**
+	 * Get an article using encoded article identifier
+	 * @param articleid
+	 * @return Article.class
+	 */
+	public Article get(String articleid) {
+		return get(eos.d(articleid));
+	}
 	/**
 	 * get a specific article
 	 * 
 	 * @param articleid
 	 * @return
 	 */
-	public Article get(String articleid) {
+	private Article get(int aid) {
 		Article article = null;
 
 		Connection c = eos.c();
@@ -236,7 +696,7 @@ public class Articles {
 		try {
 
 			s = c.createStatement();
-			int aid = eos.d(articleid);
+			
 			String sql = "select accountid,storeid,title,description,added,entered,author,essential,tags,headerimg,status,roleid,categoryid,youtube from wisdom_articles where articleid="
 					+ aid + "";
 
@@ -595,6 +1055,36 @@ public class Articles {
 			}
 		}
 
+	}
+	
+	/**
+	 * Updates indexing values.
+	 * @param articleid
+	 * @param sectionid
+	 * @param indx
+	 */
+	public void updateSectionIndex(String sectionid, String indx)
+	{
+		if(eos.isAdmin())
+		{
+			Connection c = eos.c();
+			Statement  s = null;
+			try { 
+				
+				s = c.createStatement();
+				int se = eos.d(sectionid);
+				int i = com.eos.utils.Math.getIntFromString(indx);
+				
+				String sql = "update wisdom_article_sections set indx=" + i + " where sectionid=" + se + "";
+				s.execute(sql);
+				
+			} catch(Exception e)
+			{
+				eos.log("Errors updating section index. Err:" + e.toString(),"Articles","updateSectionIndex",2);
+			} finally { 
+				eos.cleanup(c,s);
+			}
+		}
 	}
 
 	/**
