@@ -303,6 +303,129 @@ public class Ventures {
 		return is;
 	}
 
+	
+	/**
+	 * Links a user to 1 or more ventures (or removes them from a given venture if UNCHECKED)
+	 * @param r
+	 */
+	public void toggleVentureLink(String ventureid,String userid)
+	{
+		if(eos.isAdmin() || eos.isContributor())
+		{
+				
+			boolean isMember = isMember(eos.d(ventureid),eos.d(userid));
+			
+			if(isMember) { 
+				removeMember(eos.d(ventureid),eos.d(userid));
+			} else {
+				addMember(eos.d(ventureid),eos.d(userid));
+			}
+		
+		}
+					
+	}
+	
+	/**
+	 * Update a role.
+	 * @param ventureid
+	 * @param userid
+	 * @param role
+	 */
+	public void updateMemberRole(String ventureid, String userid, String role)
+	{
+		if(eos.active()) { 
+		int vid = eos.d(ventureid);
+		int uid = eos.d(userid);
+		int iRole = eos.d(role);
+		boolean isVentureOwner = false;
+		
+		Member member = getMembership(vid,eos.user().getUserId()); //get the user doing the edit's membership role.
+		
+		if(member != null) { 
+			if(member.role() == com.askredrover.Constants.ROLE_OWNER) { 
+				isVentureOwner = true;
+			}
+		}
+		
+		if(eos.isAdmin() || eos.isContributor() || isVentureOwner)
+		{
+			Connection c = eos.c();
+			Statement  s = null;
+			try {
+				
+				s = c.createStatement();
+				String sql = "update rr_venture_members set userrole=" + iRole + " where vid=" + vid + " and userid=" + uid + "";
+				s.execute(sql);
+				
+				if(iRole == com.askredrover.Constants.ROLE_OWNER) { 
+					String sql2 = "update rr_venture_members set isowner=1 where vid=" + vid + " and userid=" + uid + "";
+					s.execute(sql2);
+				}
+				
+			} catch(Exception e) { 
+				eos.log("Errors updating a user's role in a venture. Err:" + e.toString() + "","Ventures","updateMemberRole",2);
+			} finally { 
+				eos.cleanup(c,s);
+			}
+		}
+		
+		
+		//TODO RECORD IN ANALYSIS
+		
+		
+		}
+	}
+	
+	/**
+	 * Remove user as a member of a venture.
+ 	 * @param vid
+	 * @param userid
+	 */
+	private void removeMember(int vid,int userid) {
+		Connection c = eos.c();
+		Statement s = null;
+
+		try {
+
+			s = c.createStatement();
+			int eid = eos.account().eid();
+			s.execute("delete from rr_venture_members where eid=" + eid + " and userid=" + userid+" and vid="+vid+"");
+			
+			//TODO RECORD IN ANALYSIS
+			
+			} catch (Exception e) {
+			eos.log("Errors adding new venture member. Err:" + e.toString(), "Ventures", "addMember[private]", 2);
+		} finally {
+			eos.cleanup(c, s);
+		}
+	}
+	
+	
+	/**
+	 * Adds user as a member. By default we just set the user as a 'viewer'
+ 	 * @param vid
+	 * @param userid
+	 */
+	private void addMember(int vid,int userid) {
+		Connection c = eos.c();
+		Statement s = null;
+
+		try {
+
+			s = c.createStatement();
+			int eid = eos.account().eid();
+			s.execute("insert into rr_venture_members values(" + userid + "," + eid + "," + vid + ",0,0)");
+			
+			//TODO RECORD IN ANALYSIS
+			
+			
+			} catch (Exception e) {
+			eos.log("Errors adding new venture member. Err:" + e.toString(), "Ventures", "addMember[private]", 2);
+		} finally {
+			eos.cleanup(c, s);
+		}
+	}
+	
 	/**
 	 * Get the membership role a person has
 	 * 
@@ -528,6 +651,45 @@ public class Ventures {
 						lst.add(ven);
 					}
 				}
+
+			} catch (Exception e) {
+				eos.log("Errors getting ventures. Err:" + e.toString(), "Ventures", "get", 2);
+			} finally {
+				eos.cleanup(c, s, rs);
+			}
+
+		}
+		return lst;
+	}
+	
+	/**
+	 * Get a given user what ventures are they a member of?
+	 * @param userid
+	 * @return ArrayList<Venture>
+	 */
+	public ArrayList<Venture> getUserVentures(String userid) {
+		
+		ArrayList<Venture> lst = new ArrayList<Venture>();
+	
+		if (eos.active()) {
+	
+			Connection c = eos.c();
+			Statement s = null;
+			ResultSet rs = null;
+
+			try {
+
+				int uid = eos.d(userid);
+				int eid = eos.account().eid();
+				s = c.createStatement();
+				String sql = "select distinct vid from rr_venture_members where eid=" + eid + " and userid=" + uid + "";
+				rs = s.executeQuery(sql);
+				while(rs.next()) { 
+					int iV = rs.getInt(1); Venture venture = getVenture(iV);
+					if(venture!=null) { 
+						lst.add(venture);
+					}
+				}					
 
 			} catch (Exception e) {
 				eos.log("Errors getting ventures. Err:" + e.toString(), "Ventures", "get", 2);

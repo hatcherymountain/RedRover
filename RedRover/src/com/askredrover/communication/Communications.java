@@ -75,6 +75,7 @@ public class Communications {
 		try {
 			int count = 0;
 			s = c.createStatement();
+			
 			rs = s.executeQuery("select count(*) from rr_user_communications where userid=" + userid + "");
 			while (rs.next()) {
 				count = rs.getInt(1);

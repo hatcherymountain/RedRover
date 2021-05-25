@@ -53,28 +53,90 @@ public class Constants {
 	public static final String[] VENTURE_SENTIMENTS = { "Fantastic", "Great", "Good", "Average", "Could be better",
 			"Not good", "Awful" };
 	public static final int VENTURE_SENTIMENT_GOOD = 2;
-	
+
+	/** User Properties **/
+	public static final String PROFILE_CITY = "city";
+	public static final String PROFILE_COUNTRY = "country";
+	public static final String PROFILE_SKILLS = "skills";
+	public static final String PROFILE_POSITION = "position";
+	public static final String PROFILE_GENDER = "gender";
+
+	public static final String[] GENDERS = { "Undefined", "Male", "Female", "Other" };
+
+	public static final String getGender(int current) {
+		String g = null;
+
+		for (int i = 0; i < GENDERS.length; i++) {
+			String _g = (String) GENDERS[i];
+			if (i == current) {
+				g = _g;
+				break;
+			}
+		}
+
+		if (g == null) {
+			g = (String) GENDERS[0];
+		}
+		return g;
+
+	}
+
+	public static final int getGenderAsInt(int current) {
+		int iG = 0;
+
+		for (int i = 0; i < GENDERS.length; i++) {
+			if (i == current) {
+				iG = i;
+				break;
+			}
+		}
+
+		return iG;
+
+	}
+
 	/**
-	 * Get various venture states as HTML select list.
+	 * Get genders as a selection list.
+	 * 
 	 * @param current
 	 * @return
 	 */
-	public static String ventureStatesAsSelection(int current) { 
+	public static String getGendersAsSelection(int current) {
 		StringBuffer sb = new StringBuffer();
-		
-		for(int x = 0; x < VENTURE_STATES.length;x++)
-		{
-			String s = (String)VENTURE_STATES[x];
-			if(x==current) { 
+
+		for (int x = 0; x < GENDERS.length; x++) {
+			String s = (String) GENDERS[x];
+			if (x == current) {
 				sb.append("<option selected value=" + x + ">" + s + "</option>");
-			} else { 
+			} else {
 				sb.append("<option  value=" + x + ">" + s + "</option>");
 			}
 		}
-		
+
 		return sb.toString();
 	}
-	
+
+	/**
+	 * Get various venture states as HTML select list.
+	 * 
+	 * @param current
+	 * @return
+	 */
+	public static String ventureStatesAsSelection(int current) {
+		StringBuffer sb = new StringBuffer();
+
+		for (int x = 0; x < VENTURE_STATES.length; x++) {
+			String s = (String) VENTURE_STATES[x];
+			if (x == current) {
+				sb.append("<option selected value=" + x + ">" + s + "</option>");
+			} else {
+				sb.append("<option  value=" + x + ">" + s + "</option>");
+			}
+		}
+
+		return sb.toString();
+	}
+
 	/**
 	 * What is the current venture sentiment.
 	 * 
