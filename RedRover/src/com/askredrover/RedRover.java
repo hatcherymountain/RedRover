@@ -146,7 +146,7 @@ public class RedRover {
 	 */
 	public Users users() {
 		if (users == null) {
-			users = new Users(eos, this);
+			users = new Users(eos);
 		}
 		return users;
 	}
