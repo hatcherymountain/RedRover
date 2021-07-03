@@ -39,7 +39,72 @@ public class Constants {
 
 	public static final String[] SOW_STATES = { "In Review", "Active", "Paused", "Completed" };
 	public static final String[] SOW_STATE_COLORS = { "warning", "success", "info", "danger" };
+	
+	public static final String[] SOW_SENTIMENTS = { "Fantastic", "Great", "Good", "Average", "Could be better",
+			"Not good", "Awful" };
+	
+	public static final String[] SOW_SENTIMENT_COLORS = { "success", "primary", "info", "muted", "secondary",
+			"warning", "danger" };
+	public static String sowSentiment(int current) {
+		
+		String s = null;
+		
+		try { 
+			
+			s = (String)SOW_SENTIMENTS[current];
+			
+		} catch(Exception e)
+		{
+			s = (String)SOW_SENTIMENTS[0];
+		}
+		
+		return s;
+		
+	}
+	
+	
+public static String sowProgressAsSelection(int current) { 
+		
+		StringBuffer sb = new StringBuffer();
 
+		for (int i = 0; i < 101; i += 10) {
+			
+			if (i == current) {
+				sb.append("<option selected value=" + i + ">" + i + "%</option>");
+			} else {
+				sb.append("<option value=" + i + ">" + i + "%</option>");
+			}
+		}
+
+		return sb.toString();
+		
+		
+	}
+
+	/**
+	 * Get SoW sentiments as a selection string...
+	 * @param current
+	 * @return
+	 */
+	public static String sowSentimentsAsSelection(int current) { 
+		
+		StringBuffer sb = new StringBuffer();
+
+		for (int i = 0; i < SOW_SENTIMENTS.length; i++) {
+			String p = (String) SOW_SENTIMENTS[i];
+			if (i == current) {
+				sb.append("<option selected value=" + i + ">" + p + "</option>");
+			} else {
+				sb.append("<option value=" + i + ">" + p + "</option>");
+			}
+		}
+
+		return sb.toString();
+		
+		
+	}
+	
+	
 	public static final String[] ACTIVITY_PRIORITIES = { "General", "Important" };
 
 	public static final String[] BOOKMARK_TYPES = { "File", "Article", "Tutorial" };
@@ -52,6 +117,9 @@ public class Constants {
 
 	public static final String[] VENTURE_SENTIMENTS = { "Fantastic", "Great", "Good", "Average", "Could be better",
 			"Not good", "Awful" };
+	
+	public static final String[] VENTURE_SENTIMENT_COLORS = { "success", "primary", "info", "muted", "secondary",
+			"warning", "danger" };
 	public static final int VENTURE_SENTIMENT_GOOD = 2;
 
 	/** User Properties **/
@@ -159,6 +227,24 @@ public class Constants {
 
 		return sentiment;
 	}
+	
+	
+	public static String sentimentColor(int current) {
+		String sentiment = null;
+
+		for (int i = 0; i < VENTURE_SENTIMENT_COLORS.length; i++) {
+			String s = (String) VENTURE_SENTIMENT_COLORS[i];
+			if (i == current) {
+				sentiment = s;
+			}
+		}
+
+		if (sentiment == null) {
+			sentiment = (String) VENTURE_SENTIMENT_COLORS[3];
+		}
+
+		return sentiment;
+	}
 
 	/**
 	 * Get the venture roles as a selection list.
@@ -218,7 +304,7 @@ public class Constants {
 		for (int i = 0; i < SOW_STATES.length; i++) {
 			String p = (String) SOW_STATES[i];
 			if (i == current) {
-				sb.append("<option select value=" + i + ">" + p + "</option>");
+				sb.append("<option selected value=" + i + ">" + p + "</option>");
 			} else {
 				sb.append("<option value=" + i + ">" + p + "</option>");
 			}
@@ -312,7 +398,9 @@ public class Constants {
 		}
 		return s;
 	}
-
+	
+	
+	
 	/**
 	 * Event states as an HTML Selection list.
 	 * 
@@ -325,7 +413,7 @@ public class Constants {
 		for (int i = 0; i < EVENT_STATES.length; i++) {
 			String p = (String) EVENT_STATES[i];
 			if (i == current) {
-				sb.append("<option select value=" + i + ">" + p + "</option>");
+				sb.append("<option selected value=" + i + ">" + p + "</option>");
 			} else {
 				sb.append("<option value=" + i + ">" + p + "</option>");
 			}
@@ -346,7 +434,7 @@ public class Constants {
 		for (int i = 0; i < EVENT_PRIORITIES.length; i++) {
 			String p = (String) EVENT_PRIORITIES[i];
 			if (i == current) {
-				sb.append("<option select value=" + i + ">" + p + "</option>");
+				sb.append("<option selected value=" + i + ">" + p + "</option>");
 			} else {
 				sb.append("<option value=" + i + ">" + p + "</option>");
 			}

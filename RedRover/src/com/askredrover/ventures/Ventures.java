@@ -192,7 +192,7 @@ public class Ventures {
 					if (mem.getUserId() != eos.user().getUserId()) {
 						int eid = eos.account().eid();
 						s.addBatch("insert into rr_venture_members values(" + mem.getUserId() + "," + eid + "," + vid
-								+ ",0,0)");
+								+ ",0,0,0)");
 						notifylist.add(mem);
 					}
 				}
@@ -251,14 +251,15 @@ public class Ventures {
 				int eid = eos.account().eid();
 
 				s = c.createStatement();
-				String sql = "select userid,userrole,isowner from rr_venture_members where eid=" + eid + " and vid="
+				String sql = "select userid,userrole,isowner,dailycheckin from rr_venture_members where eid=" + eid + " and vid="
 						+ vid + "";
 				rs = s.executeQuery(sql);
 				while (rs.next()) {
 					int uid = rs.getInt(1);
 					int ur = rs.getInt(2);
 					int uo = rs.getInt(3);
-					Member m = new MemberObject(uid, eid, vid, ur, uo);
+					int checkin = rs.getInt(4);
+					Member m = new MemberObject(uid, eid, vid, ur, uo,checkin);
 					lst.add(m);
 				}
 
@@ -414,7 +415,7 @@ public class Ventures {
 
 			s = c.createStatement();
 			int eid = eos.account().eid();
-			s.execute("insert into rr_venture_members values(" + userid + "," + eid + "," + vid + ",0,0)");
+			s.execute("insert into rr_venture_members values(" + userid + "," + eid + "," + vid + ",0,0,0)");
 			
 			//TODO RECORD IN ANALYSIS
 			
@@ -477,7 +478,7 @@ public class Ventures {
 					User mem = eos.users().getUser(m);
 					int eid = eos.account().eid();
 					s.addBatch("insert into rr_venture_members values(" + mem.getUserId() + "," + eid + "," + vid
-							+ ",0,0)");
+							+ ",0,0,0)");
 					notifylist.add(mem);
 				}
 
@@ -873,7 +874,8 @@ public class Ventures {
 			s = c.createStatement();
 			String d = com.eos.utils.Calendar.NO_EXPIRE_DATE;
 			String sql = "insert into rr_sow values(null," + vid + ",0,'" + d + "','" + d + "','" + d
-					+ "','Objectives','',0,0,0,'" + d + "',0)";
+					+ "','Objectives','',0,0,0,'" + d + "',0,0,0,0)";
+			eos.log(sql);
 			s.execute(sql);
 
 		} catch (Exception e) {

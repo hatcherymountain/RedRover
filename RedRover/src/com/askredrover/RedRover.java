@@ -102,6 +102,20 @@ public class RedRover {
 		}
 		return loc;
 	}
+	
+	/**
+	 * Where do we want to put the files?
+	 * 
+	 * @return
+	 */
+	public String redroverFiles() {
+		String loc = "";
+		if (eos.active()) {
+			int eid = eos.account().eid();
+			loc = "redrover/" + eid + "";
+		}
+		return loc;
+	}
 
 	/**
 	 * Loyalty includes bookmarketing and kudos!

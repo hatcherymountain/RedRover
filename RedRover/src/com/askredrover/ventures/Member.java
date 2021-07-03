@@ -15,4 +15,6 @@ public interface Member {
 	public boolean owner();
 
 	public boolean editor();
+	
+	public boolean dailyCheckin();
 }
