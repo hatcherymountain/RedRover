@@ -4,14 +4,14 @@ import java.sql.Date;
 
 public class SowObject implements SOW {
 
-	private int sowid, vid, status, authorizer, signed, endventureonclose, edited,progress,sentiment = 0;
+	private int sowid, vid, status, authorizer, signed, endventureonclose, edited, progress, sentiment = 0;
 	private String title, description = null;
 	private Date starts, ends, actual, signdate = null;
 	private double budget = 0;
 
 	public SowObject(int sowid, int vid, int status, Date starts, Date ends, Date actual, String title,
-			String description, int endventureonclose, int authorizer, int signed, Date signdate, int edited, double budget,
-			int progress, int sentiment) {
+			String description, int endventureonclose, int authorizer, int signed, Date signdate, int edited,
+			double budget, int progress, int sentiment) {
 		this.sowid = sowid;
 		this.vid = vid;
 		this.status = status;
@@ -26,12 +26,11 @@ public class SowObject implements SOW {
 		this.signdate = signdate;
 		this.edited = edited;
 		this.budget = budget;
-		this.progress=progress;
-		this.sentiment=sentiment;
+		this.progress = progress;
+		this.sentiment = sentiment;
 	}
-	
-	public double budget()
-	{
+
+	public double budget() {
 		return budget;
 	}
 
@@ -102,14 +101,17 @@ public class SowObject implements SOW {
 			return false;
 		}
 	}
-	
-	
+
 	public String sentimentAsString() {
 		return com.askredrover.Constants.sentimentAsString(sentiment);
 	}
-	
-	public int sentiment() { return sentiment; }
-	
-	public int progress() { return progress; }
-	
+
+	public int sentiment() {
+		return sentiment;
+	}
+
+	public int progress() {
+		return progress;
+	}
+
 }

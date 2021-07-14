@@ -11,38 +11,37 @@ public class Support {
 
 	public Support(Eos eos) {
 		this.eos = eos;
-	}	
-	
+	}
+
 	/**
 	 * Toggle Status
+	 * 
 	 * @param sid
 	 * @param current
 	 */
-	public void toggleStatus(String sid, String current)
-	{
-		if(eos.active())
-		{
+	public void toggleStatus(String sid, String current) {
+		if (eos.active()) {
 			Connection c = eos.c();
-			Statement  s = null;
-			
-			try { 
-				
+			Statement s = null;
+
+			try {
+
 				s = c.createStatement();
-				
+
 				int iC = eos.d(current);
-				if(iC == 1) { 
+				if (iC == 1) {
 					iC = 0;
-				} else { 
+				} else {
 					iC = 1;
 				}
-				
+
 				int iSid = eos.d(sid);
 				String sql = "update rr_support set status=" + iC + " where sid=" + iSid + "";
 				s.execute(sql);
-				
-			} catch(Exception e) { 
-				eos.log("Errors toggling status. Err:" + e.toString(),"Support","toggleStatus",2);
-			} finally { 
+
+			} catch (Exception e) {
+				eos.log("Errors toggling status. Err:" + e.toString(), "Support", "toggleStatus", 2);
+			} finally {
 				eos.cleanup(c, s);
 			}
 		}
@@ -65,22 +64,22 @@ public class Support {
 			ResultSet rs = null;
 
 			try {
-					
+
 				s = c.createStatement();
 				int eid = eos.account().eid();
-				
-				String sql = "select sid,accountid, added,entered,userid,reason,title,message,status from rr_support where eid="+eid+" and typeof=" + typeof + "";
-				
-				if(onlyShowUnread) { 
+
+				String sql = "select sid,accountid, added,entered,userid,reason,title,message,status from rr_support where eid="
+						+ eid + " and typeof=" + typeof + "";
+
+				if (onlyShowUnread) {
 					sql = sql + " and status=0";
 				}
-				
+
 				sql = sql + " order by added desc";
-				
+
 				rs = s.executeQuery(sql);
-				
-				while(rs.next())
-				{
+
+				while (rs.next()) {
 					int sid = rs.getInt(1);
 					int aid = rs.getInt(2);
 					java.sql.Date a = rs.getDate(3);
@@ -90,18 +89,18 @@ public class Support {
 					String t = rs.getString(7);
 					String m = rs.getString(8);
 					int sta = rs.getInt(9);
-					
+
 					/**
 					 * 
-	public Entity(int sid, int eid, int aid, java.sql.Date added, java.sql.Timestamp entered, int userid, int typeof,
-			int reason, String title, String message, int status) {
-			
+					 * public Entity(int sid, int eid, int aid, java.sql.Date added,
+					 * java.sql.Timestamp entered, int userid, int typeof, int reason, String title,
+					 * String message, int status) {
+					 * 
 					 */
-					Entity en = new Entity(sid,eid,aid,a,e,uid,typeof,r,t,m,sta); lst.add(en);
+					Entity en = new Entity(sid, eid, aid, a, e, uid, typeof, r, t, m, sta);
+					lst.add(en);
 				}
-				
-				
-				
+
 			} catch (Exception e) {
 				eos.log("Errors getting support or feedback. Err:" + e.toString(), "Support", "get", 2);
 			} finally {
@@ -165,27 +164,27 @@ public class Support {
 				sb.append("Customer sent us the following feedback...<BR>");
 				subj = "Feedback:" + t + "";
 			}
-			
+
 			com.eos.files.File f = null;
 			int iFile = eos.d(fileid);
-			if(iFile > 0) { 
+			if (iFile > 0) {
 				f = eos.files().getFile(fileid);
 			}
-			
+
 			sb.append("<b>Name:</b> " + user.getFirstName() + "  " + user.getLastName() + "<BR>");
 			sb.append("<b>Email:</b> <a href=" + user.getEmail() + ">" + user.getEmail() + "</a><BR>");
 			sb.append("<b>Phone:</b> " + user.phoneFormatted() + "<br>");
 			sb.append("<b>Title:</b> " + t + "<BR>");
 			sb.append("<b>Reason:</b> " + r + "<br>");
 			sb.append("<B>Message:</b> " + m + "<br>");
-			if(f!=null) { 
+			if (f != null) {
 				sb.append("<b>File Attachment:</b> <a href=" + f.url() + " target=f>" + f.originalFileName() + "</a>");
 			}
 
 			String aid = eos.e(eos.user().getAccountId());
 			ArrayList<User> admins = eos.getUsers().getAccountAdmins(aid);
 			int size = admins.size();
-		//	eos.log("Number admins:" + size + "");
+			// eos.log("Number admins:" + size + "");
 			for (int i = 0; i < size; i++) {
 				User admin = (User) admins.get(i);
 				if (admin != null) {
@@ -272,15 +271,14 @@ public class Support {
 				s = c.createStatement();
 				String sql = "insert into rr_support values(null," + eid + "," + aid + ",'" + added + "',null," + uid
 						+ "," + iType + "," + iReason + ",'" + title + "','" + message + "',0," + iFileid + ")";
-				
-				
+
 				s.execute(sql);
 
 			} catch (Exception e) {
 				eos.log("Errors posting RedRover feedback. Err:" + e.toString(), "Support", "post", 2);
 			} finally {
 				eos.cleanup(c, s);
-				notifyAdmins(title, message, typeof, reason,fileid, user);
+				notifyAdmins(title, message, typeof, reason, fileid, user);
 				notifyCustomer(title, message, typeof, reason);
 			}
 		}

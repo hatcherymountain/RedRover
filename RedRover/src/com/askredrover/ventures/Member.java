@@ -15,6 +15,12 @@ public interface Member {
 	public boolean owner();
 
 	public boolean editor();
-	
+
+	public boolean pm(); // alias to projectManager
+
 	public boolean dailyCheckin();
+
+	public boolean manage();
+
+	public boolean projectManager();
 }

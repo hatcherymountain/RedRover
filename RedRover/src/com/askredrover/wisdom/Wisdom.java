@@ -21,7 +21,7 @@ public class Wisdom {
 
 	public Files files() {
 		if (files == null) {
-			files = new Files(eos,rr);
+			files = new Files(eos, rr);
 		}
 		return files;
 	}

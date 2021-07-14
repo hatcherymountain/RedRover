@@ -173,30 +173,23 @@ public class Searches {
 			try {
 
 				ArrayList<com.eos.files.File> origLst = eos.files().getAccountFiles(eos.user().getAccountId());
-					
+
 				int size = origLst.size();
 
-				
 				for (int i = 0; i < size; i++) {
-					
+
 					com.eos.files.File f = (com.eos.files.File) origLst.get(i);
-					
-					
+
 					if (f.categoryid() > 0 && f.active()) {
 
 						if (rr.wisdom().files().passSecurityCheck(f)) {
-								
-							
-							
+
 							if (f.companyid() > 0) {
-								
-								
-								
+
 								if (isInStore(f.companyid())) {
 									lst.add(f);
-								} 
-								
-								
+								}
+
 							} else {
 								lst.add(f);
 							}
@@ -212,8 +205,8 @@ public class Searches {
 			}
 
 		}
-		
-		//eos.log("Retun SIZE:" + lst.size());
+
+		// eos.log("Retun SIZE:" + lst.size());
 		return lst;
 	}
 
@@ -453,7 +446,8 @@ public class Searches {
 			try {
 
 				s = c.createStatement();
-				String sql = "select articleid from wisdom_articles where status=2 and added > now()-INTERVAL " + howmanydays + " day order by added desc";
+				String sql = "select articleid from wisdom_articles where status=2 and added > now()-INTERVAL "
+						+ howmanydays + " day order by added desc";
 				rs = s.executeQuery(sql);
 
 				while (rs.next()) {
@@ -491,8 +485,7 @@ public class Searches {
 
 		return lst;
 	}
-	
-	
+
 	/**
 	 * Get recent articles.
 	 * 
@@ -566,7 +559,8 @@ public class Searches {
 
 				s = c.createStatement();
 
-				String sql = "select fileid from eos_files where categoryid>0 and status=1 and added > now()-INTERVAL " + howmanydays + " day order by added desc";
+				String sql = "select fileid from eos_files where categoryid>0 and status=1 and added > now()-INTERVAL "
+						+ howmanydays + " day order by added desc";
 
 				rs = s.executeQuery(sql);
 
@@ -608,8 +602,6 @@ public class Searches {
 		return lst;
 	}
 
-	
-	
 	/**
 	 * Recent Files.
 	 * 
@@ -686,7 +678,8 @@ public class Searches {
 			try {
 
 				s = c.createStatement();
-				String sql = "select tutid from wisdom_tutorials where status=2 and  added > now()-INTERVAL " + howmanydays + " day order by added desc";
+				String sql = "select tutid from wisdom_tutorials where status=2 and  added > now()-INTERVAL "
+						+ howmanydays + " day order by added desc";
 				rs = s.executeQuery(sql);
 
 				while (rs.next()) {
@@ -724,8 +717,7 @@ public class Searches {
 
 		return lst;
 	}
-	
-	
+
 	/**
 	 * Get all recent tutorials
 	 * 
@@ -779,139 +771,134 @@ public class Searches {
 
 		return lst;
 	}
-	
+
 	/**
 	 * Is this a search for ID like A###, F###, T###
+	 * 
 	 * @param term
 	 * @return
 	 */
-	private boolean isIDSearch(String term)
-	{
+	private boolean isIDSearch(String term) {
 		boolean is = false;
-		
+
 		term = term.toLowerCase();
 		/** Is the first letter in search a, f or t? **/
-		String initChar = term.substring(0,1);
-		
-		if(initChar.equals("a") || initChar.equals("f") || initChar.equals("t")) {
-			
+		String initChar = term.substring(0, 1);
+
+		if (initChar.equals("a") || initChar.equals("f") || initChar.equals("t")) {
+
 			/** is the 2nd character numeric? **/
-			
+
 			boolean isDig = Character.isDigit(term.charAt(1));
-			
-			if(isDig) { 
+
+			if (isDig) {
 				is = true;
 			}
-			
+
 		}
-		
-		
+
 		return is;
 	}
-	
-	
+
 	/**
 	 * Finds articles by the PRIMARY KEY passed in as a string.
+	 * 
 	 * @param term
 	 * @return
 	 */
-	private ArrayList<Article> findArticlesByID(String term) { 
+	private ArrayList<Article> findArticlesByID(String term) {
 		ArrayList<Article> lst = new ArrayList<Article>();
-		
+
 		Connection c = eos.c();
-		Statement  s = null;
+		Statement s = null;
 		ResultSet rs = null;
-		
-		try { 
-			
+
+		try {
+
 			/** double check to make sure nothing insideous passed along **/
 			term = com.eos.Eos.clean(term);
-			
+
 			s = c.createStatement();
 			String sql = "select articleid from wisdom_articles where articleid=" + term + "";
 			eos.log(sql);
 			rs = s.executeQuery(sql);
-			while(rs.next())
-			{
-				int aid = rs.getInt(1); String strAid = eos.e(aid);
+			while (rs.next()) {
+				int aid = rs.getInt(1);
+				String strAid = eos.e(aid);
 				Article a = rr.wisdom().articles().get(strAid);
-				if(a!=null) { 
+				if (a != null) {
 					lst.add(a);
 				}
 			}
-			
-		} catch(Exception e)
-		{
-			eos.log("Errors finding articles by ID. Err;" + e.toString(),"Searches","findArticlesByID",2);
-		} finally { 
-			eos.cleanup(c, s,rs);
+
+		} catch (Exception e) {
+			eos.log("Errors finding articles by ID. Err;" + e.toString(), "Searches", "findArticlesByID", 2);
+		} finally {
+			eos.cleanup(c, s, rs);
 		}
 		return lst;
 	}
-	
-	private ArrayList<Tutorial> findTutorialsByID(String term) { 
+
+	private ArrayList<Tutorial> findTutorialsByID(String term) {
 		ArrayList<Tutorial> lst = new ArrayList<Tutorial>();
-		
+
 		Connection c = eos.c();
-		Statement  s = null;
+		Statement s = null;
 		ResultSet rs = null;
-		
-		try { 
-			
+
+		try {
+
 			/** double check to make sure nothing insideous passed along **/
 			term = com.eos.Eos.clean(term);
-			
+
 			s = c.createStatement();
 			rs = s.executeQuery("select tutid from wisdom_tutorials where tutid=" + term + "");
-			while(rs.next())
-			{
-				int tid = rs.getInt(1); String strTid = eos.e(tid);
+			while (rs.next()) {
+				int tid = rs.getInt(1);
+				String strTid = eos.e(tid);
 				Tutorial t = rr.wisdom().tutorials().get(strTid);
-				if(t!=null) { 
+				if (t != null) {
 					lst.add(t);
 				}
 			}
-			
-		} catch(Exception e)
-		{
-			eos.log("Errors finding tutorials by ID. Err;" + e.toString(),"Searches","findTutorialsByID",2);
-		} finally { 
-			eos.cleanup(c, s,rs);
+
+		} catch (Exception e) {
+			eos.log("Errors finding tutorials by ID. Err;" + e.toString(), "Searches", "findTutorialsByID", 2);
+		} finally {
+			eos.cleanup(c, s, rs);
 		}
 		return lst;
 	}
-	
-	
-	private ArrayList<com.eos.files.File> findFilesByID(String term) { 
+
+	private ArrayList<com.eos.files.File> findFilesByID(String term) {
 		ArrayList<com.eos.files.File> lst = new ArrayList<com.eos.files.File>();
-		
+
 		Connection c = eos.c();
-		Statement  s = null;
+		Statement s = null;
 		ResultSet rs = null;
-		
-		try { 
-			
+
+		try {
+
 			/** double check to make sure nothing insideous passed along **/
 			term = com.eos.Eos.clean(term);
-			
+
 			s = c.createStatement();
 			String sql = "select fileid from eos_files where fileid=" + term + "";
 			eos.log(sql);
 			rs = s.executeQuery(sql);
-			while(rs.next())
-			{
-				int fid = rs.getInt(1); String strFid = eos.e(fid);
+			while (rs.next()) {
+				int fid = rs.getInt(1);
+				String strFid = eos.e(fid);
 				com.eos.files.File file = eos.files().getFile(strFid);
-				if(file!=null) { 
+				if (file != null) {
 					lst.add(file);
 				}
 			}
-			
-		} catch(Exception e)
-		{
-			eos.log("Errors finding articles by ID. Err;" + e.toString(),"Searches","findFilesByID",2);
-		} finally { 
-			eos.cleanup(c, s,rs);
+
+		} catch (Exception e) {
+			eos.log("Errors finding articles by ID. Err;" + e.toString(), "Searches", "findFilesByID", 2);
+		} finally {
+			eos.cleanup(c, s, rs);
 		}
 		return lst;
 	}
@@ -929,43 +916,42 @@ public class Searches {
 
 			term = com.eos.utils.Strings.absoluteTruncation(term, 255); // just for safety
 			eos.log("Search term:" + term);
-			
+
 			if (term.length() > 1) {
-					
+
 				boolean idSearch = isIDSearch(term);
-				if(!idSearch) { 
-				
-				eos.log("Normal search");	
-					
-				// Activity
-				ArrayList<com.eos.files.File> files = searchFiles(term);
-				ArrayList<Article> articles = searchArticles(term);
-				ArrayList<Tutorial> tuts = searchTutorials(term);
+				if (!idSearch) {
+
+					eos.log("Normal search");
+
+					// Activity
+					ArrayList<com.eos.files.File> files = searchFiles(term);
+					ArrayList<Article> articles = searchArticles(term);
+					ArrayList<Tutorial> tuts = searchTutorials(term);
 					res = new ResultObject(files, articles, tuts);
 
 					trackSearch(term, files.size(), articles.size(), tuts.size());
-				
-				} else { 
-					
-					
+
+				} else {
+
 					eos.log("ID Search");
-					
+
 					/** Get the string to search through for ID searches **/
-					String initChar = term.substring(0,1).toLowerCase();
+					String initChar = term.substring(0, 1).toLowerCase();
 					String idterm = term.substring(1);
-					
+
 					eos.log("Searching:" + idterm);
-					
+
 					ArrayList<com.eos.files.File> files = new ArrayList<com.eos.files.File>();
 					ArrayList<Article> articles = new ArrayList<Article>();
 					ArrayList<Tutorial> tuts = new ArrayList<Tutorial>();
-					
-					if(initChar.equals("a")) { 
-						 articles = findArticlesByID(idterm);
-					} else if(initChar.equals("f")) { 
-						 files = findFilesByID(idterm);
-					} else { 
-						 tuts = findTutorialsByID(idterm);
+
+					if (initChar.equals("a")) {
+						articles = findArticlesByID(idterm);
+					} else if (initChar.equals("f")) {
+						files = findFilesByID(idterm);
+					} else {
+						tuts = findTutorialsByID(idterm);
 					}
 					res = new ResultObject(files, articles, tuts);
 					trackSearch(term, files.size(), articles.size(), tuts.size());
@@ -978,6 +964,7 @@ public class Searches {
 
 	/**
 	 * Search fulltext article descriptions
+	 * 
 	 * @param term
 	 * @return
 	 */

@@ -8,5 +8,6 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry exported="true" kind="lib" path="/Users/hatchery/developer/tomcat/lib/servlet-api.jar"/>
 	<classpathentry kind="lib" path="/Users/hatchery/developer/tomcat/webapps/redrover/WEB-INF/lib/EOS1.7.jar"/>
+	<classpathentry kind="lib" path="/Users/hatchery/developer/tomcat/webapps/fanupadmin/WEB-INF/lib/sendgrid-java.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

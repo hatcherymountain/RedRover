@@ -35,120 +35,115 @@ public class Loyalty {
 		return has;
 	}
 
-	
 	/**
 	 * How many views??
+	 * 
 	 * @param to
 	 * @param oid
 	 */
-	public int views(String to, String oid)
-	{
-		int views=0;
-		if(eos.active())
-		{
-			Connection c = eos.c(); Statement  s= null; ResultSet rs=null;
-			try { 
-				
+	public int views(String to, String oid) {
+		int views = 0;
+		if (eos.active()) {
+			Connection c = eos.c();
+			Statement s = null;
+			ResultSet rs = null;
+			try {
+
 				s = c.createStatement();
 				int iT = com.eos.utils.Strings.getIntFromString(to);
 				int id = eos.d(oid);
-				
+
 				s = c.createStatement();
 				int uid = eos.user().getUserId();
 				int eid = eos.account().eid();
-				
-				String sql = "select count(*) from wisdom_views where eid=" + eid + " and userid=" + uid + " and typeof="+iT+" and id=" + id + "";
+
+				String sql = "select count(*) from wisdom_views where eid=" + eid + " and userid=" + uid
+						+ " and typeof=" + iT + " and id=" + id + "";
 				rs = s.executeQuery(sql);
-				while(rs.next())
-				{
+				while (rs.next()) {
 					views = rs.getInt(1);
 				}
-				
-				
-			} catch(Exception e)
-			{
-				eos.log("Errors tracking a view. Err:" + e.toString(),"Loyalty","setView",2);
-			} finally { 
-				eos.cleanup(c,s,rs);
+
+			} catch (Exception e) {
+				eos.log("Errors tracking a view. Err:" + e.toString(), "Loyalty", "setView", 2);
+			} finally {
+				eos.cleanup(c, s, rs);
 			}
 		}
 		return views;
 	}
-	
+
 	/**
 	 * Has the active user seen??
+	 * 
 	 * @param to
 	 * @param oid
 	 */
-	public boolean seen(String to, String oid)
-	{
+	public boolean seen(String to, String oid) {
 		boolean has = false;
-		if(eos.active())
-		{
-			Connection c = eos.c(); Statement  s= null; ResultSet rs=null;
-			try { 
-				
+		if (eos.active()) {
+			Connection c = eos.c();
+			Statement s = null;
+			ResultSet rs = null;
+			try {
+
 				s = c.createStatement();
 				int iT = com.eos.utils.Strings.getIntFromString(to);
 				int id = eos.d(oid);
-				
+
 				s = c.createStatement();
 				int uid = eos.user().getUserId();
 				int eid = eos.account().eid();
-				
-				String sql = "select count(*) from wisdom_views where eid=" + eid + " and userid=" + uid + " and typeof="+iT+" and id=" + id + "";
+
+				String sql = "select count(*) from wisdom_views where eid=" + eid + " and userid=" + uid
+						+ " and typeof=" + iT + " and id=" + id + "";
 				rs = s.executeQuery(sql);
-				while(rs.next())
-				{
-					if(rs.getInt(1)>0) { 
+				while (rs.next()) {
+					if (rs.getInt(1) > 0) {
 						has = true;
 					}
 				}
-				
-				
-			} catch(Exception e)
-			{
-				eos.log("Errors tracking a view. Err:" + e.toString(),"Loyalty","setView",2);
-			} finally { 
-				eos.cleanup(c,s,rs);
+
+			} catch (Exception e) {
+				eos.log("Errors tracking a view. Err:" + e.toString(), "Loyalty", "setView", 2);
+			} finally {
+				eos.cleanup(c, s, rs);
 			}
 		}
 		return has;
 	}
-	
-	
+
 	/**
 	 * Establishes a View
+	 * 
 	 * @param typeof = 0 file, 1 article, 2 tut
 	 * @param oid
 	 */
-	public void setView(String to, String oid)
-	{
-		if(eos.active())
-		{
-			Connection c = eos.c(); Statement  s= null;
-			try { 
-				
+	public void setView(String to, String oid) {
+		if (eos.active()) {
+			Connection c = eos.c();
+			Statement s = null;
+			try {
+
 				s = c.createStatement();
 				int iT = com.eos.utils.Strings.getIntFromString(to);
 				int id = eos.d(oid);
-				
+
 				s = c.createStatement();
 				String t = com.eos.utils.Calendar.getTodayForSQL();
 				int uid = eos.user().getUserId();
 				int eid = eos.account().eid();
-				String sql = "insert into wisdom_views values("+uid+","+ eid+","+iT+","+id+",'"+t+"')";
+				String sql = "insert into wisdom_views values(" + uid + "," + eid + "," + iT + "," + id + ",'" + t
+						+ "')";
 				s.execute(sql);
-			} catch(Exception e)
-			{
-				eos.log("Errors tracking a view. Err:" + e.toString(),"Loyalty","setView",2);
-			} finally { 
-				eos.cleanup(c,s);
+			} catch (Exception e) {
+				eos.log("Errors tracking a view. Err:" + e.toString(), "Loyalty", "setView", 2);
+			} finally {
+				eos.cleanup(c, s);
 			}
 		}
 	}
-	
-	
+
 	/**
 	 * Has something already been bookmarked??
 	 * 

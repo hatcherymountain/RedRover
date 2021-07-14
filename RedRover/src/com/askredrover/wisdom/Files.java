@@ -242,7 +242,6 @@ public class Files {
 
 		com.askredrover.wisdom.Category cat = rr.wisdom().categories().category(category);
 
-		
 		if (cat != null) {
 
 			int iCat = cat.catid();
@@ -267,7 +266,7 @@ public class Files {
 								if (isInStore(f.companyid())) {
 									lst.add(f);
 								} else {
-														}
+								}
 
 							} else {
 

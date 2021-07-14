@@ -22,33 +22,33 @@ public class SOWS {
 	 * @param fileid
 	 */
 	public void addFile(String ventureid, String fileid) {
-		
+
 		if (eos.active()) {
 
 			// TODO ACTIVITY
 
 			SOW sow = ventureSOW(ventureid);
-			if(sow!=null) { 
-		    int sowid = sow.sowid();
-			int fid = eos.d(fileid);
-			int vid = eos.d(ventureid);
-			int aid = eos.user().getAccountId();
-		
-			Connection c = eos.c();
-			Statement s = null;
-			
-			try {
+			if (sow != null) {
+				int sowid = sow.sowid();
+				int fid = eos.d(fileid);
+				int vid = eos.d(ventureid);
+				int aid = eos.user().getAccountId();
 
-				s = c.createStatement();
-				String sql = "insert into rr_sow_files values(" + aid + "," + vid + "," + sowid + "," + fid + ")";
-				eos.log(sql);
-				s.execute(sql);
+				Connection c = eos.c();
+				Statement s = null;
 
-			} catch (Exception e) {
-				eos.log("Errors adding file. Err:" + e.toString(), "SOWS", "addFile", 2);
-			} finally {
-				eos.cleanup(c, s);
-			}
+				try {
+
+					s = c.createStatement();
+					String sql = "insert into rr_sow_files values(" + aid + "," + vid + "," + sowid + "," + fid + ")";
+					eos.log(sql);
+					s.execute(sql);
+
+				} catch (Exception e) {
+					eos.log("Errors adding file. Err:" + e.toString(), "SOWS", "addFile", 2);
+				} finally {
+					eos.cleanup(c, s);
+				}
 			}
 		}
 	}
@@ -174,37 +174,34 @@ public class SOWS {
 			try {
 
 				s = c.createStatement();
-				
+
 				String sowid = r.getParameter("sowid");
 				int sid = eos.d(sowid);
 
 				String title = com.eos.Eos.clean(r.getParameter("t"));
 				String desc = com.eos.Eos.clean(r.getParameter("description"));
-				
-				
+
 				String startsClean = com.eos.utils.Calendar.clean(r.getParameter("start"));
 				String endsClean = com.eos.utils.Calendar.clean(r.getParameter("end"));
 
 				String status = r.getParameter("status");
 				int iS = com.eos.utils.Strings.getIntFromString(status);
-				
-				
-				String budget = r.getParameter("budget"); budget = com.eos.Eos.clean(budget);
-				budget = budget.replace("$","");
-				budget = budget.replace(".00","");
-				budget = budget.replace(",00","");
-				budget = budget.replace("___.","");
-				budget = budget.replace("__","");
-				
-				//update rr_sow set budget=___.__20,00 where sowid=3
-				
-				
-				String sentiment = r.getParameter("sentiment"); int iSentiment = com.eos.utils.Math.getIntFromString(sentiment);
-				String progress = r.getParameter("progress"); int iProgress = com.eos.utils.Math.getIntFromString(progress);
-				
-				
-				
-				
+
+				String budget = r.getParameter("budget");
+				budget = com.eos.Eos.clean(budget);
+				budget = budget.replace("$", "");
+				budget = budget.replace(".00", "");
+				budget = budget.replace(",00", "");
+				budget = budget.replace("___.", "");
+				budget = budget.replace("__", "");
+
+				// update rr_sow set budget=___.__20,00 where sowid=3
+
+				String sentiment = r.getParameter("sentiment");
+				int iSentiment = com.eos.utils.Math.getIntFromString(sentiment);
+				String progress = r.getParameter("progress");
+				int iProgress = com.eos.utils.Math.getIntFromString(progress);
+
 				s = c.createStatement();
 				s.addBatch("update rr_sow set title='" + title + "' where sowid=" + sid + "");
 				s.addBatch("update rr_sow set description='" + desc + "' where sowid=" + sid + "");
@@ -215,8 +212,8 @@ public class SOWS {
 				s.addBatch("update rr_sow set sentiment=" + iSentiment + " where sowid=" + sid + "");
 				s.addBatch("update rr_sow set progress=" + iProgress + " where sowid=" + sid + "");
 				s.addBatch("update rr_sow set budget='" + budget + "' where sowid=" + sid + "");
-				
-				//eos.log("update rr_sow set budget=" + budget + " where sowid=" + sid + "");
+
+				// eos.log("update rr_sow set budget=" + budget + " where sowid=" + sid + "");
 				s.executeBatch();
 
 			} catch (Exception e) {
@@ -224,9 +221,9 @@ public class SOWS {
 			} finally {
 				eos.cleanup(c, s);
 
-				//if (com.eos.utils.Forms.getCheckboxState(milestones) == 1) {
-					//setSOWDateMilestones(sowid, starts, ends);
-				//}
+				// if (com.eos.utils.Forms.getCheckboxState(milestones) == 1) {
+				// setSOWDateMilestones(sowid, starts, ends);
+				// }
 			}
 		}
 	}
@@ -264,8 +261,7 @@ public class SOWS {
 			int id = eos.d(ventureid);
 
 			String sql = "select sowid,status,starts,ends,actualend,title,description,endventureonclose,authorizer,"
-					+ "issigned,signdate,firstedit,budget,progress,sentiment from rr_sow where vid="
-					+ id + "";
+					+ "issigned,signdate,firstedit,budget,progress,sentiment from rr_sow where vid=" + id + "";
 			rs = s.executeQuery(sql);
 
 			while (rs.next()) {
@@ -286,7 +282,7 @@ public class SOWS {
 				int se = rs.getInt(15);
 
 				sow = new SowObject(sid, id, st, starts, ends, actualend, title, desc, endonclose, authorizer, signed,
-						signdate, fedit,b,p,se);
+						signdate, fedit, b, p, se);
 
 			}
 

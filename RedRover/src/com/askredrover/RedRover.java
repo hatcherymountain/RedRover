@@ -17,7 +17,8 @@ public class RedRover {
 	private Messages messages = null;
 	private Events events = null;
 	private Communications comms = null;
-
+	private Emails emails = null;
+		
 	private boolean showWisdom = false;
 	private boolean showVentures = false;
 	private Wisdom wisdom = null;
@@ -30,7 +31,16 @@ public class RedRover {
 		showWisdom = true;
 		showVentures = true;
 	}
-
+	
+	
+	/**
+	 * RedRover-specific email implementation.
+	 * @return
+	 */
+	public  Emails emails() { 
+		if(emails==null) { emails = new Emails(eos,this); }
+		return emails;
+	}
 	/**
 	 * Access to Support.
 	 * 
@@ -102,7 +112,7 @@ public class RedRover {
 		}
 		return loc;
 	}
-	
+
 	/**
 	 * Where do we want to put the files?
 	 * 

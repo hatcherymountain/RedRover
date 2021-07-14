@@ -30,7 +30,8 @@ public class Events {
 	 * @return
 	 */
 	public String add(String ventureid, String title, String description, String sow, String milestone, String dateof,
-			String due, String ownerid, String priority, String progress, String status) {
+			String due, String ownerid, String priority, String progress, String status, String category,
+			String actionItemID) {
 
 		int vid = eos.d(ventureid);
 		int iSow = com.eos.utils.Strings.getIntFromString(sow);
@@ -39,14 +40,16 @@ public class Events {
 		int iPriority = com.eos.utils.Strings.getIntFromString(priority);
 		int iProgress = com.eos.utils.Strings.getIntFromString(progress);
 		int iStatus = com.eos.utils.Strings.getIntFromString(status);
+		int iCid = com.eos.utils.Strings.getIntFromString(category);
+		int iAid = eos.d(actionItemID);
 
-		return add(vid, title, description, iSow, iMile, dateof, due, iOwner, iPriority, iProgress, iStatus);
+		return add(vid, title, description, iSow, iMile, dateof, due, iOwner, iPriority, iProgress, iStatus, iCid,
+				iAid);
 	}
-	
-	
+
 	public Event event(String eventid) {
 		Event e = null;
-		
+
 		if (eos.active()) {
 
 			Connection c = eos.c();
@@ -58,7 +61,8 @@ public class Events {
 				s = c.createStatement();
 				int id = eos.d(eventid);
 
-				String sql = "select eid,accountid,vid,title,description,milestone, dateof,due,added,entered,owner,priority,progress,status from rr_events where eventid="
+				String sql = "select eid,accountid,vid,title,description,milestone, "
+						+ "dateof,due,added,entered,owner,priority,progress,status, categoryid, actionitemid from rr_events where eventid="
 						+ id + "";
 
 				rs = s.executeQuery(sql);
@@ -77,9 +81,11 @@ public class Events {
 					int priority = rs.getInt(12);
 					int progress = rs.getInt(13);
 					int status = rs.getInt(14);
+					int cid = rs.getInt(15);
+					int aid = rs.getInt(16);
 
-					e = new EventObject(id,eid, a,v, t, d, 1, m, when, due, add, entered, owner, priority,
-							progress, status);
+					e = new EventObject(id, eid, a, v, t, d, 1, m, when, due, add, entered, owner, priority, progress,
+							status, cid, aid);
 				}
 
 			} catch (Exception ex) {
@@ -91,47 +97,45 @@ public class Events {
 		}
 
 		return e;
-		
-}
-	
-	
+
+	}
+
 	/**
 	 * Updates an events status
+	 * 
 	 * @param eventid
 	 * @param status
 	 */
-	public void updateEventStatus(String eventid, String status)
-	{
+	public void updateEventStatus(String eventid, String status) {
 		if (eos.active()) {
 
 			Connection c = eos.c();
 			Statement s = null;
-			
-			try { 
-			
-				//RECORD ACTIVITY
+
+			try {
+
+				// RECORD ACTIVITY
 				s = c.createStatement();
-				
+
 				int id = eos.d(eventid);
-				if(id>0)
-				{
+				if (id > 0) {
 					int iStatus = com.eos.utils.Strings.getIntFromString(status);
 					s.execute("update rr_events set status=" + iStatus + " where eventid=" + id + "");
-					
-					if(iStatus==2) {
+
+					if (iStatus == 2) {
 						s.execute("update rr_events set progress=100 where eventid=" + id + "");
 					}
 				}
-				
-			} catch(Exception e) { 
-				eos.log("Errors updating event status. Err:" + e.toString(),"Events","updateEventStatus",2);
-			} finally { 
-				eos.cleanup(c,s);
+
+			} catch (Exception e) {
+				eos.log("Errors updating event status. Err:" + e.toString(), "Events", "updateEventStatus", 2);
+			} finally {
+				eos.cleanup(c, s);
 			}
-	
+
 		}
 	}
-	
+
 	/**
 	 * Get events/tasks that are SOW-related
 	 * 
@@ -152,7 +156,8 @@ public class Events {
 				s = c.createStatement();
 				int id = eos.d(ventureid);
 
-				String sql = "select eventid,eid,accountid,title,description,milestone, dateof,due,added,entered,owner,priority,progress,status from rr_events where vid="
+				String sql = "select eventid,eid,accountid,title,description,milestone, dateof,"
+						+ "due,added,entered,owner,priority,progress,status, categoryid, actionitemid from rr_events where vid="
 						+ id + " and sow=1 order by due desc";
 
 				rs = s.executeQuery(sql);
@@ -171,9 +176,11 @@ public class Events {
 					int priority = rs.getInt(12);
 					int progress = rs.getInt(13);
 					int status = rs.getInt(14);
+					int cid = rs.getInt(15);
+					int aid = rs.getInt(16);
 
 					Event ev = new EventObject(e, ei, a, id, t, d, 1, m, when, due, add, entered, owner, priority,
-							progress, status);
+							progress, status, cid, aid);
 					lst.add(ev);
 				}
 
@@ -239,60 +246,65 @@ public class Events {
 			}
 		}
 	}
-	
+
 	/**
 	 * Updates SOW Event Milestone
+	 * 
 	 * @param r
 	 */
-	public void updateSOWMilestone(javax.servlet.http.HttpServletRequest r)
-	{
-		if(eos.isActive()) { 
-			
+	public void updateSOWMilestone(javax.servlet.http.HttpServletRequest r) {
+		if (eos.isActive()) {
+
 			Connection c = eos.c();
-			Statement  s = null;
-			try { 
-				
+			Statement s = null;
+			try {
+
 				s = c.createStatement();
 				String v = r.getParameter("vid");
-				int iV = eos.d(v); 
-				if(iV>0) { 
-					
-					String eventid = r.getParameter("mid"); int eid = eos.d(eventid);
-					
-					String title = r.getParameter("title"); title = com.eos.Eos.clean(title);
-					String desc  = r.getParameter("description"); desc = com.eos.Eos.clean(desc);
-					String dateof = r.getParameter("dateof"); dateof = com.eos.utils.Calendar.clean(dateof);
-					String priority = r.getParameter("priority"); int iPriority = com.eos.utils.Strings.getIntFromString(priority);
-					String status = r.getParameter("status"); int iStatus = com.eos.utils.Strings.getIntFromString(status);
-					String progress = r.getParameter("progress"); int iProgress = com.eos.utils.Strings.getIntFromString(progress);
-					
-					if(title.length() > 0) {
+				int iV = eos.d(v);
+				if (iV > 0) {
+
+					String eventid = r.getParameter("mid");
+					int eid = eos.d(eventid);
+
+					String title = r.getParameter("title");
+					title = com.eos.Eos.clean(title);
+					String desc = r.getParameter("description");
+					desc = com.eos.Eos.clean(desc);
+					String dateof = r.getParameter("dateof");
+					dateof = com.eos.utils.Calendar.clean(dateof);
+					String priority = r.getParameter("priority");
+					int iPriority = com.eos.utils.Strings.getIntFromString(priority);
+					String status = r.getParameter("status");
+					int iStatus = com.eos.utils.Strings.getIntFromString(status);
+					String progress = r.getParameter("progress");
+					int iProgress = com.eos.utils.Strings.getIntFromString(progress);
+
+					if (title.length() > 0) {
 						s.addBatch("update rr_events set title='" + title + "' where eventid=" + eid + "");
 					}
-					
+
 					s.addBatch("update rr_events set description='" + desc + "' where eventid=" + eid + "");
-					
+
 					s.addBatch("update rr_events set dateof='" + dateof + "' where eventid=" + eid + "");
-				
+
 					s.addBatch("update rr_events set priority=" + iPriority + " where eventid=" + eid + "");
-					
+
 					s.addBatch("update rr_events set status=" + iStatus + " where eventid=" + eid + "");
-					
+
 					s.addBatch("update rr_events set progress=" + iProgress + " where eventid=" + eid + "");
-					
+
 					s.executeBatch();
-					
+
 				}
-				
-			} catch(Exception e)
-			{
-				eos.log("Errors updating SOW milestone. Err:" + e.toString(),"Events","updateSOWMilestone",2);
-			} finally { 
+
+			} catch (Exception e) {
+				eos.log("Errors updating SOW milestone. Err:" + e.toString(), "Events", "updateSOWMilestone", 2);
+			} finally {
 				eos.cleanup(c, s);
 			}
 		}
 	}
-
 
 	/**
 	 * Adds a SOW /task/event
@@ -313,8 +325,8 @@ public class Events {
 				int id = eos.d(vid);
 				int uid = eos.user().getUserId();
 				int iPriority = com.eos.utils.Strings.getIntFromString(priority);
-				add(id, title, description, 1, 1,when, "", uid, iPriority, 0,
-						com.askredrover.Constants.EVENT_STATE_ACTIVE);
+				add(id, title, description, 1, 1, when, "", uid, iPriority, 0,
+						com.askredrover.Constants.EVENT_STATE_ACTIVE, 0, 0);
 
 			} catch (Exception e) {
 				eos.log("Errors adding SOW task. Err:" + e.toString(), "Events", "addSOWEvent", 2);
@@ -345,10 +357,10 @@ public class Events {
 				int iPriority = 2;
 
 				add(id, "SOW Starts:" + starts, "", 1, 1, starts, "", uid, iPriority, 0,
-						com.askredrover.Constants.EVENT_STATE_ACTIVE);
+						com.askredrover.Constants.EVENT_STATE_ACTIVE, 0, 0);
 
 				add(id, "SOW Ends:" + ends, "", 1, 1, ends, "", uid, iPriority, 0,
-						com.askredrover.Constants.EVENT_STATE_ACTIVE);
+						com.askredrover.Constants.EVENT_STATE_ACTIVE, 0, 0);
 
 			} catch (Exception e) {
 				eos.log("Errors adding SOW milestone events. Err:" + e.toString(), "Events", "addSOWDateMilestones", 2);
@@ -375,7 +387,7 @@ public class Events {
 	 * @return
 	 */
 	private String add(int vid, String title, String description, int sow, int milestone, String dateof, String due,
-			int ownerid, int priority, int progress, int status) {
+			int ownerid, int priority, int progress, int status, int cid, int aid) {
 		String eventid = null;
 
 		if (eos.active()) {
@@ -409,7 +421,10 @@ public class Events {
 
 				String sql = "insert into rr_events values(null," + eid + "," + accountid + "," + vid + ",'" + title
 						+ "','" + description + "'," + sow + "," + milestone + "," + "'" + _dateOf + "','" + _due
-						+ "','" + today + "',null," + ownerid + "," + priority + "," + progress + "," + status + ")";
+						+ "','" + today + "',null," + ownerid + "," + priority + "," + progress + "," + status + ","
+						+ cid + ", " + aid + ")";
+
+				// eos.log(sql);
 
 				ps = c.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
 

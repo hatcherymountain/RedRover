@@ -5,13 +5,14 @@ import java.sql.Timestamp;
 
 public class EventObject implements Event {
 
-	private int eventid, eid, aid, vid, sow, milestone, owner, priority, progress, status = 0;
+	private int eventid, eid, aid, vid, sow, milestone, owner, priority, progress, status, categoryid, actionitemid = 0;
 	private String title, desc = null;
 	private Date dateof, due, added = null;
 	private Timestamp entered = null;
 
 	public EventObject(int eventid, int eid, int aid, int vid, String title, String desc, int sow, int milestone,
-			Date dateof, Date due, Date added, Timestamp entered, int owner, int priority, int progress, int status) {
+			Date dateof, Date due, Date added, Timestamp entered, int owner, int priority, int progress, int status,
+			int categoryid, int actionitemid) {
 		this.eventid = eventid;
 		this.eid = eid;
 		this.aid = aid;
@@ -28,6 +29,8 @@ public class EventObject implements Event {
 		this.priority = priority;
 		this.progress = progress;
 		this.status = status;
+		this.categoryid = categoryid;
+		this.actionitemid = actionitemid;
 	}
 
 	public int eventid() {
@@ -112,6 +115,14 @@ public class EventObject implements Event {
 
 	public String priorityColorAsString() {
 		return com.askredrover.Constants.eventPriorityColorAsString(priority);
+	}
+
+	public int category() {
+		return categoryid;
+	}
+
+	public int actionItemId() {
+		return actionitemid;
 	}
 
 }

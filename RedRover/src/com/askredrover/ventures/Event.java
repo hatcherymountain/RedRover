@@ -43,4 +43,8 @@ public interface Event {
 
 	public String statusAsString();
 
+	public int category();
+
+	public int actionItemId();
+
 }

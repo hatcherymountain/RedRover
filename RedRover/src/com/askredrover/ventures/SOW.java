@@ -33,11 +33,10 @@ public interface SOW {
 	public String statusAsString();
 
 	public double budget();
-	
+
 	public int sentiment();
 
 	public String sentimentAsString();
-	
-	
+
 	public int progress();
 }

@@ -1,5 +1,6 @@
 package com.askredrover.ventures;
 
+import com.askredrover.ventures.meetings.*;
 import com.eos.Eos;
 import com.askredrover.RedRover;
 import java.sql.*;
@@ -13,11 +14,24 @@ public class Ventures {
 	private Eos eos = null;
 	private ArrayList<Group> groups = null;
 	private ArrayList<Type> types = null;
+	private Meetings meetings = null;
 
 	public Ventures(Eos eos, RedRover rr) {
 		this.eos = eos;
 		this.rr = rr;
 		loadTypes();
+	}
+
+	/**
+	 * Access to meetings.
+	 * 
+	 * @return
+	 */
+	public Meetings meetings() {
+		if (meetings == null) {
+			meetings = new Meetings(eos, rr);
+		}
+		return meetings;
 	}
 
 	public ArrayList<Type> ventureTypes() {
@@ -233,6 +247,36 @@ public class Ventures {
 	}
 
 	/**
+	 * Return HTML options for all members of a venture.
+	 * 
+	 * @return String
+	 */
+	public String membersAsSelection(String vid) {
+		StringBuffer sb = new StringBuffer();
+
+		ArrayList<Member> lst = members(vid);
+		int size = lst.size();
+		for (int i = 0; i < size; i++) {
+			Member m = (Member) lst.get(i);
+			String uid = eos.e(m.userid());
+			User user = eos.getUsers().getUser(uid);
+			if (user != null) {
+				if (user.getStatus() == 1) { // must be active user.
+					if (user.getUserId() == eos.user().getUserId()) {
+						sb.append("<option selected value=" + uid + ">" + user.getFirstName() + " " + user.getLastName()
+								+ "</option>");
+					} else {
+						sb.append("<option value=" + uid + ">" + user.getFirstName() + " " + user.getLastName()
+								+ "</option>");
+					}
+				}
+			}
+		}
+
+		return sb.toString();
+	}
+
+	/**
 	 * Get all members of a venture.
 	 * 
 	 * @param vid
@@ -251,15 +295,15 @@ public class Ventures {
 				int eid = eos.account().eid();
 
 				s = c.createStatement();
-				String sql = "select userid,userrole,isowner,dailycheckin from rr_venture_members where eid=" + eid + " and vid="
-						+ vid + "";
+				String sql = "select userid,userrole,isowner,dailycheckin from rr_venture_members where eid=" + eid
+						+ " and vid=" + vid + "";
 				rs = s.executeQuery(sql);
 				while (rs.next()) {
 					int uid = rs.getInt(1);
 					int ur = rs.getInt(2);
 					int uo = rs.getInt(3);
 					int checkin = rs.getInt(4);
-					Member m = new MemberObject(uid, eid, vid, ur, uo,checkin);
+					Member m = new MemberObject(uid, eid, vid, ur, uo, checkin);
 					lst.add(m);
 				}
 
@@ -304,85 +348,119 @@ public class Ventures {
 		return is;
 	}
 
-	
 	/**
-	 * Links a user to 1 or more ventures (or removes them from a given venture if UNCHECKED)
+	 * Links a user to 1 or more ventures (or removes them from a given venture if
+	 * UNCHECKED)
+	 * 
 	 * @param r
 	 */
-	public void toggleVentureLink(String ventureid,String userid)
-	{
-		if(eos.isAdmin() || eos.isContributor())
-		{
-				
-			boolean isMember = isMember(eos.d(ventureid),eos.d(userid));
-			
-			if(isMember) { 
-				removeMember(eos.d(ventureid),eos.d(userid));
+	public void toggleVentureLink(String ventureid, String userid) {
+		if (eos.isAdmin() || eos.isContributor()) {
+
+			boolean isMember = isMember(eos.d(ventureid), eos.d(userid));
+
+			if (isMember) {
+				removeMember(eos.d(ventureid), eos.d(userid));
 			} else {
-				addMember(eos.d(ventureid),eos.d(userid));
+				addMember(eos.d(ventureid), eos.d(userid));
 			}
-		
 		}
-					
 	}
-	
+
+	/**
+	 * Updates checkin yes or not.
+	 * 
+	 * @param userid
+	 * @param String encoding of integer 0/1 value
+	 */
+	public void updateDailyCheckin(String userid, String ventureid, String value) {
+		if (eos.isActive()) {
+			Connection c = eos.c();
+			Statement s = null;
+			try {
+
+				s = c.createStatement();
+				int uid = eos.d(userid);
+				int vid = eos.d(ventureid);
+				int dci = eos.d(value);
+
+				String sql = "update rr_venture_members set dailycheckin=" + dci + " where userid=" + uid + " and vid="
+						+ vid + "";
+				s.execute(sql);
+
+			} catch (Exception e) {
+				eos.log("Errors updating whether user has daily checkin or not. Err:" + e.toString(), "Ventures",
+						"updateDailyCheckin", 2);
+			} finally {
+				eos.cleanup(c, s);
+			}
+		}
+	}
+
 	/**
 	 * Update a role.
+	 * 
 	 * @param ventureid
 	 * @param userid
 	 * @param role
 	 */
-	public void updateMemberRole(String ventureid, String userid, String role)
-	{
-		if(eos.active()) { 
-		int vid = eos.d(ventureid);
-		int uid = eos.d(userid);
-		int iRole = eos.d(role);
-		boolean isVentureOwner = false;
-		
-		Member member = getMembership(vid,eos.user().getUserId()); //get the user doing the edit's membership role.
-		
-		if(member != null) { 
-			if(member.role() == com.askredrover.Constants.ROLE_OWNER) { 
-				isVentureOwner = true;
-			}
-		}
-		
-		if(eos.isAdmin() || eos.isContributor() || isVentureOwner)
-		{
-			Connection c = eos.c();
-			Statement  s = null;
-			try {
-				
-				s = c.createStatement();
-				String sql = "update rr_venture_members set userrole=" + iRole + " where vid=" + vid + " and userid=" + uid + "";
-				s.execute(sql);
-				
-				if(iRole == com.askredrover.Constants.ROLE_OWNER) { 
-					String sql2 = "update rr_venture_members set isowner=1 where vid=" + vid + " and userid=" + uid + "";
-					s.execute(sql2);
+	public void updateMemberRole(String ventureid, String userid, String role) {
+		if (eos.active()) {
+			int vid = eos.d(ventureid);
+			int uid = eos.d(userid);
+			int iRole = com.eos.utils.Strings.getIntFromString(role);
+			boolean isVentureOwner = false;
+
+			Member member = getMembership(vid, eos.user().getUserId()); // get the user doing the edit's membership
+																		// role.
+
+			if (member != null) {
+				if (member.role() == com.askredrover.Constants.ROLE_OWNER) {
+					isVentureOwner = true;
 				}
-				
-			} catch(Exception e) { 
-				eos.log("Errors updating a user's role in a venture. Err:" + e.toString() + "","Ventures","updateMemberRole",2);
-			} finally { 
-				eos.cleanup(c,s);
 			}
-		}
-		
-		
-		//TODO RECORD IN ANALYSIS
-		
-		
+
+			if (eos.isAdmin() || eos.isContributor() || isVentureOwner) {
+				Connection c = eos.c();
+				Statement s = null;
+				try {
+
+					s = c.createStatement();
+					String sql = "update rr_venture_members set userrole=" + iRole + " where vid=" + vid
+							+ " and userid=" + uid + "";
+					s.execute(sql);
+
+					if (iRole == com.askredrover.Constants.ROLE_OWNER) {
+						String sql2 = "update rr_venture_members set isowner=1 where vid=" + vid + " and userid=" + uid
+								+ "";
+						s.execute(sql2);
+					}
+
+				} catch (Exception e) {
+					eos.log("Errors updating a user's role in a venture. Err:" + e.toString() + "", "Ventures",
+							"updateMemberRole", 2);
+				} finally {
+					eos.cleanup(c, s);
+				}
+			}
+
+			// TODO RECORD IN ANALYSIS
+
 		}
 	}
-	
+
+	public void removeMember(String vid, String userid) {
+		removeMember(eos.d(vid), eos.d(userid));
+	}
+
 	/**
 	 * Remove user as a member of a venture.
- 	 * @param vid
+	 * 
+	 * @param vid
 	 * @param userid
 	 */
-	private void removeMember(int vid,int userid) {
+	private void removeMember(int vid, int userid) {
+
 		Connection c = eos.c();
 		Statement s = null;
 
@@ -390,24 +468,25 @@ public class Ventures {
 
 			s = c.createStatement();
 			int eid = eos.account().eid();
-			s.execute("delete from rr_venture_members where eid=" + eid + " and userid=" + userid+" and vid="+vid+"");
-			
-			//TODO RECORD IN ANALYSIS
-			
-			} catch (Exception e) {
-			eos.log("Errors adding new venture member. Err:" + e.toString(), "Ventures", "addMember[private]", 2);
+			s.execute("delete from rr_venture_members where eid=" + eid + " and userid=" + userid + " and vid=" + vid
+					+ "");
+
+			// TODO RECORD IN ANALYSIS
+
+		} catch (Exception e) {
+			eos.log("Errors removing user from team. Err:" + e.toString(), "Ventures", "addMember[private]", 2);
 		} finally {
 			eos.cleanup(c, s);
 		}
 	}
-	
-	
+
 	/**
 	 * Adds user as a member. By default we just set the user as a 'viewer'
- 	 * @param vid
+	 * 
+	 * @param vid
 	 * @param userid
 	 */
-	private void addMember(int vid,int userid) {
+	private void addMember(int vid, int userid) {
 		Connection c = eos.c();
 		Statement s = null;
 
@@ -416,17 +495,16 @@ public class Ventures {
 			s = c.createStatement();
 			int eid = eos.account().eid();
 			s.execute("insert into rr_venture_members values(" + userid + "," + eid + "," + vid + ",0,0,0)");
-			
-			//TODO RECORD IN ANALYSIS
-			
-			
-			} catch (Exception e) {
+
+			// TODO RECORD IN ANALYSIS
+
+		} catch (Exception e) {
 			eos.log("Errors adding new venture member. Err:" + e.toString(), "Ventures", "addMember[private]", 2);
 		} finally {
 			eos.cleanup(c, s);
 		}
 	}
-	
+
 	/**
 	 * Get the membership role a person has
 	 * 
@@ -598,8 +676,7 @@ public class Ventures {
 		}
 		return venture;
 	}
-	
-	
+
 	/**
 	 * Get Ventures
 	 * 
@@ -629,7 +706,7 @@ public class Ventures {
 				}
 
 				rs = s.executeQuery(sql);
-				
+
 				while (rs.next()) {
 					int v = rs.getInt(1);
 					int e = rs.getInt(2);
@@ -646,9 +723,10 @@ public class Ventures {
 					String color = rs.getString(13);
 					int pro = rs.getInt(14);
 					int sen = rs.getInt(15);
-					
-					if(isMember(v,eos.user().getUserId())) { 
-						VentureObject ven = new VentureObject(v, e, a, _c, t, d, to, st, ad, en, au, groupid, color, pro,sen);
+
+					if (isMember(v, eos.user().getUserId())) {
+						VentureObject ven = new VentureObject(v, e, a, _c, t, d, to, st, ad, en, au, groupid, color,
+								pro, sen);
 						lst.add(ven);
 					}
 				}
@@ -662,18 +740,19 @@ public class Ventures {
 		}
 		return lst;
 	}
-	
+
 	/**
 	 * Get a given user what ventures are they a member of?
+	 * 
 	 * @param userid
 	 * @return ArrayList<Venture>
 	 */
 	public ArrayList<Venture> getUserVentures(String userid) {
-		
+
 		ArrayList<Venture> lst = new ArrayList<Venture>();
-	
+
 		if (eos.active()) {
-	
+
 			Connection c = eos.c();
 			Statement s = null;
 			ResultSet rs = null;
@@ -685,12 +764,13 @@ public class Ventures {
 				s = c.createStatement();
 				String sql = "select distinct vid from rr_venture_members where eid=" + eid + " and userid=" + uid + "";
 				rs = s.executeQuery(sql);
-				while(rs.next()) { 
-					int iV = rs.getInt(1); Venture venture = getVenture(iV);
-					if(venture!=null) { 
+				while (rs.next()) {
+					int iV = rs.getInt(1);
+					Venture venture = getVenture(iV);
+					if (venture != null) {
 						lst.add(venture);
 					}
-				}					
+				}
 
 			} catch (Exception e) {
 				eos.log("Errors getting ventures. Err:" + e.toString(), "Ventures", "get", 2);
@@ -702,8 +782,6 @@ public class Ventures {
 		return lst;
 	}
 
-	
-	
 	/**
 	 * Get Ventures
 	 * 
@@ -834,25 +912,25 @@ public class Ventures {
 
 		sb.append("<select name=\"" + selectName + "\" class=\"form-control\">");
 		sb.append("<option value=\"0\">Select a group</option/>");
-		
-		if(size>0) { 
-		
-		for (int x = 0; x < size; x++) {
 
-			Group g = (Group) groups().get(x);
-			String eid = eos.e(g.groupid());
+		if (size > 0) {
 
-			if (g.groupid() == iCurrent) {
-				sb.append("<option selected value=\"" + eid + "\">" + g.name() + "</option>");
-			} else {
-				sb.append("<option  value=\"" + eid + "\">" + g.name() + "</option>");
+			for (int x = 0; x < size; x++) {
+
+				Group g = (Group) groups().get(x);
+				String eid = eos.e(g.groupid());
+
+				if (g.groupid() == iCurrent) {
+					sb.append("<option selected value=\"" + eid + "\">" + g.name() + "</option>");
+				} else {
+					sb.append("<option  value=\"" + eid + "\">" + g.name() + "</option>");
+				}
 			}
-		}
-		
+
 		} else {
-			
+
 			sb.append("<option  value=\"" + eos.e(0) + "\">No groups have been added...</option>");
-			
+
 		}
 
 		sb.append("</select>");
@@ -991,19 +1069,17 @@ public class Ventures {
 		ResultSet rs = null;
 		String title = "";
 		String desc = "";
-		
-		
+
 		/** Deal with dates so we can handle in final **/
 		String start = r.getParameter("vstart");
-		if(start==null || start.length() == 0) { 
-			start=com.eos.utils.Calendar.getTodayForSQL();
-		} else { 
+		if (start == null || start.length() == 0) {
+			start = com.eos.utils.Calendar.getTodayForSQL();
+		} else {
 			start = com.eos.utils.Calendar.clean(start);
 		}
-		String end   = r.getParameter("vend");
+		String end = r.getParameter("vend");
 		end = com.eos.utils.Calendar.clean(end);
-		
-		
+
 		try {
 
 			int eid = eos.account().eid();
@@ -1019,8 +1095,7 @@ public class Ventures {
 			String color = com.eos.Eos.clean(r.getParameter("vcolor"));
 			String _type = r.getParameter("ptype");
 			int iType = com.eos.utils.Strings.getIntFromString(_type);
-			
-			
+
 			if (title.length() == 0) {
 				title = "Venture - " + today + "";
 			}
@@ -1053,7 +1128,7 @@ public class Ventures {
 				addInitialEvent(vid, title, desc);
 				addOwner(vid);
 				addInitialMembers(vid, r);
-				addSOWStub(vid,start,end);
+				addSOWStub(vid, start, end);
 			}
 		}
 

@@ -115,10 +115,7 @@ public class Categories {
 			}
 		}
 	}
-	
-	
-	
-	
+
 	/**
 	 * How many files are associated with a category?
 	 * 
@@ -139,7 +136,7 @@ public class Categories {
 				s = c.createStatement();
 				int cid = eos.d(catid);
 				String sql = "select count(*) from eos_files where categoryid=" + cid + " and status=1";
-				
+
 				rs = s.executeQuery(sql);
 				while (rs.next()) {
 					count = rs.getInt(1);
@@ -171,102 +168,113 @@ public class Categories {
 
 		return can;
 	}
-	
+
 	/**
 	 * Get all counts and roll up.
+	 * 
 	 * @param Encoded parent identifier.
 	 * @return int total count
 	 */
-	public int totalArticleCount(String parentid) { 
+	public int totalArticleCount(String parentid) {
 		int total = 0;
 		int iPid = eos.d(parentid);
 		total = countArticles(parentid); // this gets # to the parent. Typically 0.
-		
+
 		/** Get siblings for parent **/
-		ArrayList<Category> kids = children(iPid); int csize = kids.size();
-		for(int i = 0; i < csize; i++) {
-			Category kid = (Category)kids.get(i); 
+		ArrayList<Category> kids = children(iPid);
+		int csize = kids.size();
+		for (int i = 0; i < csize; i++) {
+			Category kid = (Category) kids.get(i);
 			String kidid = eos.e(kid.catid());
 			total = total + countArticles(kidid);
-			
+
 			/** Siblings? **/
-			ArrayList<Category> siblings = siblings(kid.catid()); int ssize = siblings.size();
-			for(int y = 0; y < ssize; y++) { 
-				Category sib = (Category)siblings.get(y); String sibid = eos.e(sib.catid());
+			ArrayList<Category> siblings = siblings(kid.catid());
+			int ssize = siblings.size();
+			for (int y = 0; y < ssize; y++) {
+				Category sib = (Category) siblings.get(y);
+				String sibid = eos.e(sib.catid());
 				total = total + countArticles(sibid);
 			}
 		}
 		return total;
 	}
+
 	/**
 	 * Get all file counts and roll up
+	 * 
 	 * @param parentid
 	 * @return int total count
 	 */
-	public int totalTutorialCount(String parentid) { 
+	public int totalTutorialCount(String parentid) {
 		int total = 0;
 		int iPid = eos.d(parentid);
 		total = countTutorials(parentid); // this gets # to the parent. Typically 0.
-		
+
 		/** Get siblings for parent **/
-		ArrayList<Category> kids = children(iPid); int csize = kids.size();
-		for(int i = 0; i < csize; i++) {
-			Category kid = (Category)kids.get(i); 
+		ArrayList<Category> kids = children(iPid);
+		int csize = kids.size();
+		for (int i = 0; i < csize; i++) {
+			Category kid = (Category) kids.get(i);
 			String kidid = eos.e(kid.catid());
 			total = total + countTutorials(kidid);
-			
+
 			/** Siblings? **/
-			ArrayList<Category> siblings = siblings(kid.catid()); int ssize = siblings.size();
-			for(int y = 0; y < ssize; y++) { 
-				Category sib = (Category)siblings.get(y); String sibid = eos.e(sib.catid());
+			ArrayList<Category> siblings = siblings(kid.catid());
+			int ssize = siblings.size();
+			for (int y = 0; y < ssize; y++) {
+				Category sib = (Category) siblings.get(y);
+				String sibid = eos.e(sib.catid());
 				total = total + countTutorials(sibid);
 			}
 		}
 		return total;
 	}
-	
-	
-	
+
 	/**
 	 * Get all file counts and roll up
+	 * 
 	 * @param parentid
 	 * @return int total count
 	 */
-	public int totalFileCount(String parentid) { 
+	public int totalFileCount(String parentid) {
 		int total = 0;
 		int iPid = eos.d(parentid);
 		total = countFiles(parentid); // this gets # to the parent. Typically 0.
-		
+
 		/** Get siblings for parent **/
-		ArrayList<Category> kids = children(iPid); int csize = kids.size();
-		for(int i = 0; i < csize; i++) {
-			Category kid = (Category)kids.get(i); 
+		ArrayList<Category> kids = children(iPid);
+		int csize = kids.size();
+		for (int i = 0; i < csize; i++) {
+			Category kid = (Category) kids.get(i);
 			String kidid = eos.e(kid.catid());
 			total = total + countFiles(kidid);
-			
+
 			/** Siblings? **/
-			ArrayList<Category> siblings = siblings(kid.catid()); int ssize = siblings.size();
-			for(int y = 0; y < ssize; y++) { 
-				Category sib = (Category)siblings.get(y); String sibid = eos.e(sib.catid());
+			ArrayList<Category> siblings = siblings(kid.catid());
+			int ssize = siblings.size();
+			for (int y = 0; y < ssize; y++) {
+				Category sib = (Category) siblings.get(y);
+				String sibid = eos.e(sib.catid());
 				total = total + countFiles(sibid);
 			}
 		}
 		return total;
 	}
-	
-	
+
 	/**
 	 * Total number of items
+	 * 
 	 * @param catid
 	 * @return
 	 */
 	public int totalItems(String catid) {
 		int t = 0;
 
-			int ct = countTutorials(catid); 
-			int ca = countArticles(catid);
-			int cf = countFiles(catid);
-			t = ct + ca + cf;
+		int ct = countTutorials(catid);
+		int ca = countArticles(catid);
+		int cf = countFiles(catid);
+		t = ct + ca + cf;
 		return t;
 	}
 
